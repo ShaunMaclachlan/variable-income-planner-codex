@@ -11,6 +11,7 @@ export interface Shift {
   status: ShiftStatus
   source?: ShiftSource
   sourceTitle?: string
+  calendarEventId?: string
 }
 
 export interface PayRules {
@@ -57,9 +58,17 @@ export interface PlannerProfile {
   employer: string
 }
 
+export interface CalendarConnection {
+  kind: 'ics-url'
+  name: string
+  url: string
+  lastSyncedAt?: string
+}
+
 export interface PlannerState {
   profile: PlannerProfile
   shifts: Shift[]
   settings: PlannerSettings
   payRules: PayRules
+  calendarConnection?: CalendarConnection
 }

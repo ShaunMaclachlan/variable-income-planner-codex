@@ -15,7 +15,8 @@ Within five seconds the home screen should show:
 - add, edit and remove shifts
 - selectable 1pm, 2pm and 3pm early finishes
 - early, late, long-day, night and training templates
-- calendar-title normalisation ready for a future live connector
+- read-only Apple/iCloud/subscribed-calendar link checks and `.ics` file import
+- review-before-apply calendar changes, deduplication and protected manual/email overrides
 - segment pay at UK local-time and day boundaries
 - gross pay, payroll timing and holiday accrual
 - assessment-period progress and buffer/shortfall
@@ -28,7 +29,7 @@ Within five seconds the home screen should show:
 
 ## Excluded from this vertical slice
 
-- live rota/calendar import
+- background calendar syncing without a user press
 - payslip ingestion and net-pay calculation
 - secure authentication and cloud sync (device profiles are not online accounts)
 - automated eligibility decisions or advice to accept or decline a shift

@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 describe('VIP app', () => {
   beforeEach(() => localStorage.clear())
+  afterEach(() => vi.restoreAllMocks())
 
   const continueAsLoren = () => {
     fireEvent.click(screen.getByRole('button', { name: /Loren/ }))
@@ -60,6 +61,43 @@ describe('VIP app', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Late' }))
     expect(screen.getByLabelText('Starts')).toHaveValue('12:00')
     expect(screen.getByLabelText('Finishes')).toHaveValue('20:00')
+  })
+
+  it('offers a provider-neutral Apple calendar connection and safe file fallback', () => {
+    render(<App />)
+    continueAsLoren()
+    fireEvent.click(screen.getByRole('button', { name: 'Connect calendar' }))
+
+    expect(screen.getByRole('heading', { name: 'Sync your shifts' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Connect Apple Calendar' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Calendar subscription link')).toBeInTheDocument()
+    expect(screen.getByText('Choose .ics file')).toBeInTheDocument()
+    expect(screen.getByText(/VIP never edits the calendar/i)).toBeInTheDocument()
+  })
+
+  it('checks a connected calendar, previews a new shift and applies it only after review', async () => {
+    const calendar = `BEGIN:VCALENDAR\r
+VERSION:2.0\r
+BEGIN:VEVENT\r
+UID:new-night@example.com\r
+SUMMARY:Night shift Phyllis Tuckwell\r
+DTSTART;TZID=Europe/London:20260901T190000\r
+DTEND;TZID=Europe/London:20260902T073000\r
+END:VEVENT\r
+END:VCALENDAR`
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(calendar, { status: 200 }))
+    render(<App />)
+    continueAsLoren()
+    fireEvent.click(screen.getByRole('button', { name: 'Connect calendar' }))
+    fireEvent.change(screen.getByLabelText('Calendar subscription link'), { target: { value: 'webcal://example.com/rota.ics' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Connect and check calendar' }))
+
+    expect(await screen.findByRole('heading', { name: 'Calendar check results' })).toBeInTheDocument()
+    expect(screen.getByText('1 Sep · Night · 19:00–07:30')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Apply 1 calendar change' }))
+    expect(screen.getByText(/Calendar sync applied/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Shifts' }))
+    expect(screen.getByRole('button', { name: 'Edit Night on 1 September 2026' })).toBeInTheDocument()
   })
 
   it('previews the hours cushion after changing a 3pm early finish to 1pm', () => {

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { DateTime } from 'luxon'
 import { Dashboard } from './components/Dashboard'
+import { CalendarSync } from './components/CalendarSync'
 import { ProfileSetup } from './components/ProfileSetup'
 import { ShiftForm } from './components/ShiftForm'
 import { calendarSnapshotCheckedAt, calendarSnapshotThrough } from './data/calendarSnapshot'
@@ -12,7 +13,7 @@ import { usePersistedState } from './hooks/usePersistedState'
 import './styles.css'
 import './refinements.css'
 
-type View = 'home' | 'planner' | 'shifts' | 'finances' | 'settings'
+type View = 'home' | 'planner' | 'shifts' | 'finances' | 'calendar' | 'settings'
 
 const money = (value: number) => new Intl.NumberFormat('en-GB', {
   style: 'currency',
@@ -23,6 +24,7 @@ export default function App() {
   const { state, profiles, setState, selectProfile, createProfile, signOut, reset } = usePersistedState()
   const [view, setView] = useState<View>('home')
   const [editing, setEditing] = useState<Shift | undefined>()
+  const [syncRequest, setSyncRequest] = useState(0)
   const workingState = state ?? profiles[0]
   const rules = workingState.payRules
 
@@ -63,6 +65,12 @@ export default function App() {
     return <ProfileSetup profiles={profiles} onSelect={selectProfile} onCreate={createProfile} />
   }
 
+  const openCalendar = () => {
+    setEditing(undefined)
+    setView('calendar')
+    if (state.calendarConnection) setSyncRequest(Date.now())
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -74,7 +82,16 @@ export default function App() {
       </header>
 
       <main>
-        {view === 'home' && <Dashboard state={state} rules={rules} onPlan={() => setView('planner')} />}
+        {view === 'home' && <Dashboard state={state} rules={rules} onPlan={() => setView('planner')} onCalendar={openCalendar} />}
+
+        {view === 'calendar' && <>
+          <div className="page-title">
+            <span className="eyebrow">Calendar</span>
+            <h1>Sync your shifts</h1>
+            <p>Check a read-only Apple, iCloud or rota subscription and review every change before it affects the forecast.</p>
+          </div>
+          <CalendarSync state={state} setState={setState} syncRequest={syncRequest} />
+        </>}
 
         {view === 'planner' && <>
           <div className="page-title">
@@ -206,8 +223,8 @@ export default function App() {
       </main>
 
       <nav className="bottom-nav" aria-label="Primary navigation">
-        {([['home', '⌂', 'Home'], ['planner', '+', 'Plan'], ['shifts', '▣', 'Shifts'], ['finances', '£', 'Finances']] as const).map(([target, icon, label]) => (
-          <button aria-label={label} className={view === target ? 'active' : ''} key={target} onClick={() => { setEditing(undefined); setView(target) }}><span>{icon}</span>{label}</button>
+        {([['home', '⌂', 'Home'], ['planner', '+', 'Plan'], ['calendar', '↻', 'Sync'], ['shifts', '▣', 'Shifts'], ['finances', '£', 'Finances']] as const).map(([target, icon, label]) => (
+          <button aria-label={label} className={view === target ? 'active' : ''} key={target} onClick={() => target === 'calendar' ? openCalendar() : (setEditing(undefined), setView(target))}><span>{icon}</span>{label}</button>
         ))}
       </nav>
     </div>

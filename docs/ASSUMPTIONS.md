@@ -32,6 +32,13 @@ The domain engine is the source of truth. These decisions reflect the contract i
 - Unrelated events such as sports training are excluded.
 - The seed is a snapshot, not live sync. It contains relevant work entries reviewed through 30 August 2026.
 - Until an email integration is designed, later changes are applied through Edit Shift and saved locally.
+- Calendar sync is user-triggered and read-only. VIP never writes to the source calendar.
+- A subscription-link sync reads timed `.ics` events, filters to the active assessment period and applies nothing until the user reviews the result.
+- Existing email, manual and confirmed entries take priority over a conflicting calendar entry.
+- Calendar event identity and date/shift matching prevent repeat imports. Events that disappear from a feed are not automatically deleted from VIP.
+- An `.ics` file can be selected when the calendar host does not allow a browser to fetch its subscription link.
+- Recurring `.ics` rules are currently flagged and only their first event is considered; iRota shift entries are expected to be individual events until a real feed confirms otherwise.
+- Public iCloud calendar links are bearer links: anyone who obtains the link can view that calendar. Only a separate work calendar should be connected, and the link is stored only in the browser profile.
 
 ## Childcare and payroll
 

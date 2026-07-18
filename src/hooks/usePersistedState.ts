@@ -17,6 +17,7 @@ function normaliseState(value: Partial<PlannerState>, fallback: PlannerState): P
     shifts: Array.isArray(value.shifts) ? value.shifts : structuredClone(fallback.shifts),
     settings: { ...fallback.settings, ...value.settings },
     payRules: { ...defaultPayRules, ...fallback.payRules, ...value.payRules },
+    calendarConnection: value.calendarConnection ?? fallback.calendarConnection,
   }
 }
 
