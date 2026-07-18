@@ -46,7 +46,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return body as T
 }
 
-function authHeaders(accessToken = publishableKey): HeadersInit {
+function authHeaders(accessToken = publishableKey): Record<string, string> {
   if (!publishableKey) return {}
   return {
     apikey: publishableKey,
