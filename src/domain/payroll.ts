@@ -7,11 +7,20 @@ function lastSaturdayOfMonth(date: DateTime) {
   return day
 }
 
+function previousWorkingDay(date: DateTime, rules: PayRules) {
+  let candidate = date
+  while (candidate.weekday > 5 || rules.publicHolidayDates.includes(candidate.toISODate()!)) {
+    candidate = candidate.minus({ days: 1 })
+  }
+  return candidate
+}
+
 export function forecastPayDate(shift: Shift, rules: PayRules) {
   const shiftDate = DateTime.fromISO(shift.date, { zone: rules.zone }).startOf('day')
   const cutoff = lastSaturdayOfMonth(shiftDate)
   const monthsAhead = shiftDate <= cutoff ? 1 : 2
-  return shiftDate.plus({ months: monthsAhead }).set({ day: 25 }).toISODate()!
+  const contractualPayDate = shiftDate.plus({ months: monthsAhead }).set({ day: 25 })
+  return previousWorkingDay(contractualPayDate, rules).toISODate()!
 }
 
 export function formatPayrollMonth(date: string) {

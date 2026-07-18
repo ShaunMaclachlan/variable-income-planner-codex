@@ -11,7 +11,6 @@ function shift(overrides: Partial<Shift>): Shift {
     start: '07:00',
     end: '15:00',
     breakMinutes: 60,
-    overtimeMultiplier: 1,
     status: 'worked',
     ...overrides,
   }
@@ -26,13 +25,12 @@ describe('golden shift calculations', () => {
       'Friday into Saturday',
       { date: '2026-07-10', start: '19:00', end: '07:00', breakMinutes: 30 },
       11.5,
-      264.92,
+      262.235,
     ],
-    ['Sunday into Monday', { date: '2026-07-12', start: '23:00', end: '07:00' }, 7, 168.26],
-    ['spring clock change', { date: '2026-03-28', start: '19:00', end: '07:00' }, 10, 264.92],
-    ['autumn clock change', { date: '2026-10-24', start: '19:00', end: '07:00' }, 12, 322.2],
-    ['weekday overtime', { overtimeMultiplier: 1.5 }, 7, 187.95],
-    ['public holiday', { date: '2026-08-31' }, 7, 200.48],
+    ['Sunday into Monday', { date: '2026-07-12', start: '23:00', end: '07:00' }, 7, 162.89],
+    ['spring clock change', { date: '2026-03-28', start: '19:00', end: '07:00' }, 10, 259.55],
+    ['autumn clock change', { date: '2026-10-24', start: '19:00', end: '07:00' }, 12, 316.83],
+    ['public holiday', { date: '2026-08-31' }, 7, 250.6],
   ])('%s', (_name, overrides, expectedHours, expectedGross) => {
     const result = calculateShift(shift(overrides), defaultPayRules)
     expect(result.paidHours).toBeCloseTo(expectedHours, 6)
@@ -42,6 +40,17 @@ describe('golden shift calculations', () => {
   it('accrues holiday from paid rather than elapsed hours', () => {
     const result = calculateShift(shift({}), defaultPayRules)
     expect(result.holidayHours).toBeCloseTo(7 / 8.2, 6)
+  })
+
+  it('deducts a cross-band break from the highest-rate segment first', () => {
+    const result = calculateShift(shift({
+      date: '2026-07-12',
+      start: '23:00',
+      end: '07:00',
+      breakMinutes: 60,
+    }), defaultPayRules)
+    expect(result.segments.find((segment) => segment.label === 'Sunday')?.paidHours).toBe(0)
+    expect(result.segments.find((segment) => segment.label === 'Night')?.paidHours).toBe(7)
   })
 
   it('uses actual elapsed hours across both clock changes', () => {

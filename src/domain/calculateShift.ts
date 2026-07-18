@@ -99,7 +99,7 @@ export function calculateShift(shift: Shift, rules: PayRules): ShiftCalculation 
   let breakHours = Math.max(0, shift.breakMinutes) / 60
   raw
     .map((segment, index) => ({ index, multiplier: segment.multiplier }))
-    .sort((a, b) => a.multiplier - b.multiplier || a.index - b.index)
+    .sort((a, b) => b.multiplier - a.multiplier || a.index - b.index)
     .forEach(({ index }) => {
       if (breakHours <= EPSILON) return
       const deduction = Math.min(paidHours[index], breakHours)
@@ -107,7 +107,6 @@ export function calculateShift(shift: Shift, rules: PayRules): ShiftCalculation 
       breakHours -= deduction
     })
 
-  const overtimeMultiplier = Math.max(1, shift.overtimeMultiplier || 1)
   const segments: PaySegment[] = raw.map((segment, index) => {
     const hours = paidHours[index]
     return {
@@ -117,8 +116,7 @@ export function calculateShift(shift: Shift, rules: PayRules): ShiftCalculation 
       elapsedHours: segment.elapsedHours,
       paidHours: hours,
       multiplier: segment.multiplier,
-      overtimeMultiplier,
-      gross: hours * rules.baseRate * segment.multiplier * overtimeMultiplier,
+      gross: hours * rules.baseRate * segment.multiplier,
     }
   })
   const totalPaidHours = segments.reduce((total, segment) => total + segment.paidHours, 0)

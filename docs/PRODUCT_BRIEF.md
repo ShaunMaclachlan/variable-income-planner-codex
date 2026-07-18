@@ -2,7 +2,7 @@
 
 ## User and job
 
-The first user is Loren, a Phyllis Tuckwell bank worker. The MVP helps her understand the financial effect of a proposed shift before accepting it.
+The first user is Loren, a Phyllis Tuckwell bank worker. The MVP helps her understand the gross financial effect and payroll timing of a proposed shift before accepting it.
 
 Within five seconds the home screen should show:
 
@@ -13,17 +13,18 @@ Within five seconds the home screen should show:
 ## Included
 
 - add, edit and remove shifts
-- early, late, long-day and night templates
-- segment pay at local time and day boundaries
-- show gross pay, indicative take-home, payroll timing and holiday accrual
+- selectable 1pm, 2pm and 3pm early finishes
+- early, late, long-day, night and training templates
+- calendar-title normalisation ready for a future live connector
+- segment pay at UK local-time and day boundaries
+- gross pay, payroll timing and holiday accrual
 - assessment-period progress and buffer/shortfall
-- local persistence and reset to verified seed data
-- calculation breakdowns and explicit assumptions
+- local persistence and reset to confirmed seed plus calendar snapshot
+- calculation breakdowns and explicit decisions
 
 ## Excluded from this vertical slice
 
-- rota/calendar imports
-- payslip ingestion
+- live rota/calendar import
+- payslip ingestion and net-pay calculation
 - authentication, cloud sync and multiple users
-- definitive PAYE tax calculation
-- automated eligibility decisions or advice to accept/decline a shift
+- automated eligibility decisions or advice to accept or decline a shift

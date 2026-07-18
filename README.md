@@ -22,9 +22,10 @@ npm run check
 - UK-local shift entry, including overnight shifts and daylight-saving changes
 - configurable weekday night, Saturday, Sunday and public-holiday enhancements
 - transparent pay segmentation and unpaid-break allocation
-- holiday accrual and indicative take-home planning
+- holiday accrual and gross-pay planning; net pay waits for a recent payslip
 - childcare assessment-period progress
-- payroll cutoff forecasting
+- payroll cutoff and previous-working-day payday forecasting
+- calendar snapshot normalisation where the shift title wins over conflicting event hours
 - on-device persistence; no account or cloud sync yet
 
 Read [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) before relying on forecasts. Product questions that remain after the first build are recorded in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).

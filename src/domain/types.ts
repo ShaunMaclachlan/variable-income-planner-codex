@@ -1,4 +1,5 @@
 export type ShiftStatus = 'worked' | 'planned' | 'cancelled'
+export type ShiftSource = 'confirmed' | 'calendar' | 'manual'
 
 export interface Shift {
   id: string
@@ -7,8 +8,9 @@ export interface Shift {
   start: string
   end: string
   breakMinutes: number
-  overtimeMultiplier: number
   status: ShiftStatus
+  source?: ShiftSource
+  sourceTitle?: string
 }
 
 export interface PayRules {
@@ -31,7 +33,6 @@ export interface PaySegment {
   elapsedHours: number
   paidHours: number
   multiplier: number
-  overtimeMultiplier: number
   gross: number
 }
 
@@ -47,8 +48,7 @@ export interface PlannerSettings {
   assessmentStart: string
   assessmentEnd: string
   assessmentTarget: number
-  manualAssessmentEarnings: number
-  takeHomeRetention: number
+  manualHolidayHours: number
 }
 
 export interface PlannerState {

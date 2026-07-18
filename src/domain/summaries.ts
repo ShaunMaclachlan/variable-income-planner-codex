@@ -23,10 +23,12 @@ export function assessmentSummary(shifts: Shift[], rules: PayRules, settings: Pl
     (shift) => shift.date >= settings.assessmentStart && shift.date <= settings.assessmentEnd,
   )
   const shiftGross = totalFor(inPeriod, rules).gross
-  const gross = shiftGross + settings.manualAssessmentEarnings
+  const manualHolidayGross = settings.manualHolidayHours * rules.baseRate
+  const gross = shiftGross + manualHolidayGross
   const difference = gross - settings.assessmentTarget
   return {
     shiftGross,
+    manualHolidayGross,
     gross,
     target: settings.assessmentTarget,
     difference,

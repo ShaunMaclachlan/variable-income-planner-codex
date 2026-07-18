@@ -20,11 +20,19 @@ describe('VIP app', () => {
     expect(screen.getByText('View pay breakdown')).toBeInTheDocument()
   })
 
-  it('shows provisional assumptions in settings', () => {
+  it('shows the confirmed contract rules in settings', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
-    expect(screen.getByText('Current assumptions')).toBeInTheDocument()
-    expect(screen.getByText(/Public holiday/)).toBeInTheDocument()
-    expect(screen.getByText(/payslip confirmation/)).toBeInTheDocument()
+    expect(screen.getByText('Current contract rules')).toBeInTheDocument()
+    expect(screen.getByText('Public holiday worked')).toBeInTheDocument()
+    expect(screen.getByText(/Highest-rate hours first/)).toBeInTheDocument()
+  })
+
+  it('offers all three confirmed early finish choices', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Plan a shift' }))
+    expect(screen.getByRole('option', { name: '1pm' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '2pm' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '3pm' })).toBeInTheDocument()
   })
 })

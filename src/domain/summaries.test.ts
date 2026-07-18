@@ -4,12 +4,14 @@ import { defaultPayRules } from './rules'
 import { assessmentSummary } from './summaries'
 
 describe('Loren assessment seed data', () => {
-  it('contains only the confirmed work through 7 July plus the explicit holiday adjustment', () => {
+  it('includes confirmed work, the bounded calendar snapshot and 3.25 holiday hours', () => {
     const summary = assessmentSummary(defaultState.shifts, defaultPayRules, defaultState.settings)
-    expect(defaultState.shifts).toHaveLength(8)
-    expect(defaultState.shifts.every((shift) => shift.date <= '2026-07-07')).toBe(true)
-    expect(summary.shiftGross).toBeCloseTo(979.13, 2)
-    expect(summary.gross).toBeCloseTo(1041.78, 2)
-    expect(summary.difference).toBeCloseTo(-1601.9, 2)
+    expect(defaultState.shifts).toHaveLength(19)
+    expect(defaultState.shifts.some((shift) => shift.date === '2026-08-30')).toBe(true)
+    expect(defaultState.settings.manualHolidayHours).toBe(3.25)
+    expect(summary.shiftGross).toBeCloseTo(2708.27, 2)
+    expect(summary.manualHolidayGross).toBeCloseTo(58.175, 3)
+    expect(summary.gross).toBeCloseTo(2766.445, 3)
+    expect(summary.difference).toBeCloseTo(122.765, 3)
   })
 })

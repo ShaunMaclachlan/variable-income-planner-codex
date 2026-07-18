@@ -29,7 +29,8 @@ export function Dashboard({ state, rules, onPlan }: Props) {
     </section>
     <section className="card">
       <div className="section-heading"><div><span className="eyebrow">This month</span><h2>Financial position</h2></div></div>
-      <div className="snapshot-grid"><div><span>Gross earnings</span><strong>{money(month.gross)}</strong></div><div><span>Indicative take-home</span><strong>{money(month.gross * state.settings.takeHomeRetention)}</strong></div><div><span>Paid hours</span><strong>{month.hours.toFixed(1)}h</strong></div><div><span>Holiday earned</span><strong>{month.holidayHours.toFixed(1)}h</strong></div></div>
+      <div className="snapshot-grid"><div><span>Gross forecast</span><strong>{money(month.gross)}</strong></div><div><span>Included shifts</span><strong>{monthShifts.filter((shift) => shift.status !== 'cancelled').length}</strong></div><div><span>Paid hours</span><strong>{month.hours.toFixed(1)}h</strong></div><div><span>Holiday earned</span><strong>{month.holidayHours.toFixed(1)}h</strong></div></div>
+      <p className="fine-print">Includes worked and planned shifts. Net pay is waiting for a recent payslip.</p>
     </section>
     <section className="card">
       <div className="section-heading"><div><span className="eyebrow">Next</span><h2>Upcoming shifts</h2></div></div>
