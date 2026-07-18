@@ -22,6 +22,7 @@ Within five seconds the home screen should show:
 - buffer shown in money and base-rate-equivalent hours
 - exact post-change buffer when adding or editing a shift
 - on-device profile chooser and personalised home screen
+- neutral pay-rule defaults for new profiles, with contract rates entered in Settings
 - local persistence and reset to confirmed seed plus calendar snapshot
 - calculation breakdowns and explicit decisions
 

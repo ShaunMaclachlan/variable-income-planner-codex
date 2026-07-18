@@ -189,13 +189,14 @@ export default function App() {
               <label>Saturday rate<input type="number" min="1" step="0.1" value={rules.saturdayMultiplier} onChange={(event) => setState({ ...state, payRules: { ...rules, saturdayMultiplier: Number(event.target.value) } })} /></label>
               <label>Sunday rate<input type="number" min="1" step="0.1" value={rules.sundayMultiplier} onChange={(event) => setState({ ...state, payRules: { ...rules, sundayMultiplier: Number(event.target.value) } })} /></label>
               <label>Public holiday rate<input type="number" min="1" step="0.1" value={rules.publicHolidayMultiplier} onChange={(event) => setState({ ...state, payRules: { ...rules, publicHolidayMultiplier: Number(event.target.value) } })} /></label>
+              <label>Paid hours per 1h holiday<input type="number" min="0" step="0.1" value={rules.holidayHoursPerPaidHours > 0 ? Number((1 / rules.holidayHoursPerPaidHours).toFixed(2)) : ''} placeholder="Not set" onChange={(event) => { const paidHours = Number(event.target.value); setState({ ...state, payRules: { ...rules, holidayHoursPerPaidHours: paidHours > 0 ? 1 / paidHours : 0 } }) }} /></label>
             </div>
             <div className="assumption-list">
               <div><span>Weekday nights</span><strong>{rules.weekdayNightMultiplier}× · {rules.nightStarts}–{rules.nightEnds}</strong></div>
               <div><span>Saturday</span><strong>{rules.saturdayMultiplier}×</strong></div>
               <div><span>Sunday</span><strong>{rules.sundayMultiplier}×</strong></div>
               <div><span>Public holiday worked</span><strong>{rules.publicHolidayMultiplier}×</strong></div>
-              <div><span>Holiday accrual</span><strong>1h per 8.2 paid hours</strong></div>
+              <div><span>Holiday accrual</span><strong>{rules.holidayHoursPerPaidHours > 0 ? `1h per ${(1 / rules.holidayHoursPerPaidHours).toFixed(1)} paid hours` : 'Not set'}</strong></div>
               <div><span>Cross-band break</span><strong>Highest-rate hours first</strong></div>
             </div>
             <p className="safety-note">The highest applicable enhancement wins. No overtime premium is assumed because the contract does not define one.</p>

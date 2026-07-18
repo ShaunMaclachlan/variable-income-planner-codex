@@ -52,6 +52,7 @@ export function newProfileState(profile: PlannerState['profile'], settings: Plan
       saturdayMultiplier: 1,
       sundayMultiplier: 1,
       publicHolidayMultiplier: 1,
+      holidayHoursPerPaidHours: 0,
     },
   }
 }

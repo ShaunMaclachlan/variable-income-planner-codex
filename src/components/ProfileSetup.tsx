@@ -65,7 +65,7 @@ export function ProfileSetup({ profiles, onSelect, onCreate }: Props) {
               <label>Assessment ends<input type="date" value={assessmentEnd} onChange={(event) => setAssessmentEnd(event.target.value)} /></label>
             </div>
             <button className="primary-button" disabled={!firstName.trim() || baseRate <= 0 || assessmentTarget <= 0} onClick={create}>Create my plan</button>
-            <p className="safety-note">New profiles start without night or weekend enhancements. Add the rates from your contract in Settings before relying on the forecast.</p>
+            <p className="safety-note">New profiles start without night or weekend enhancements or holiday accrual. Add the rules from your contract in Settings before relying on the forecast.</p>
           </div>}
       </section>
       <p className="setup-note">This is a device profile, not a secure online account. Cloud accounts and syncing will come later.</p>

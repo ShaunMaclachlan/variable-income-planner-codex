@@ -85,5 +85,8 @@ describe('VIP app', () => {
     expect(screen.getByRole('heading', { name: /Alex/ })).toBeInTheDocument()
     expect(screen.getByText(/Example Care/)).toBeInTheDocument()
     expect(screen.getByText('No upcoming shifts recorded.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(screen.getByLabelText('Base hourly rate (£)')).toHaveValue(20)
+    expect(screen.getByText('Not set')).toBeInTheDocument()
   })
 })
