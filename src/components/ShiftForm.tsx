@@ -4,10 +4,13 @@ import { templates, type TemplateName } from '../data/defaults'
 import { statutoryBreakMinutes } from '../domain/breaks'
 import { calculateShift } from '../domain/calculateShift'
 import { forecastPayDate, formatPayrollMonth } from '../domain/payroll'
-import type { PayRules, Shift } from '../domain/types'
+import { shiftChangeSummary } from '../domain/summaries'
+import type { PayRules, PlannerSettings, Shift } from '../domain/types'
 
 interface Props {
   rules: PayRules
+  allShifts: Shift[]
+  settings: PlannerSettings
   existing?: Shift
   onSave: (shift: Shift) => void
   onCancel?: () => void
@@ -28,7 +31,7 @@ function initialDraft(existing?: Shift): Shift {
   }
 }
 
-export function ShiftForm({ rules, existing, onSave, onCancel }: Props) {
+export function ShiftForm({ rules, allShifts, settings, existing, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => initialDraft(existing))
   const rawResult = useMemo(() => calculateShift(draft, rules), [draft, rules])
   const isTrainingOrStudy = /training|study/i.test(draft.label)
@@ -39,6 +42,11 @@ export function ShiftForm({ rules, existing, onSave, onCancel }: Props) {
     [draft, effectiveBreak, rules],
   )
   const payrollDate = forecastPayDate(draft, rules)
+  const change = useMemo(
+    () => shiftChangeSummary(allShifts, { ...draft, breakMinutes: effectiveBreak }, rules, settings, existing?.id),
+    [allShifts, draft, effectiveBreak, existing?.id, rules, settings],
+  )
+  const projectedIsBuffer = change.projected.difference >= 0
 
   const applyTemplate = (name: TemplateName) => {
     const template = templates[name]
@@ -90,6 +98,13 @@ export function ShiftForm({ rules, existing, onSave, onCancel }: Props) {
         <div><span>Paid hours</span><strong>{result.paidHours.toFixed(2)}h</strong></div>
         <div><span>Holiday earned</span><strong>{result.holidayHours.toFixed(2)}h</strong></div>
         <div><span>Expected payroll</span><strong>{formatPayrollMonth(payrollDate)}</strong><small>Forecast pay date {DateTime.fromISO(payrollDate).toFormat('d LLL')}</small></div>
+      </div>
+
+      <div className={`projected-buffer ${projectedIsBuffer ? 'positive-panel' : 'negative-panel'}`}>
+        <span className="eyebrow">After saving</span>
+        <strong>{Math.abs(change.projected.bufferHours).toFixed(2)} base-rate hours {projectedIsBuffer ? 'buffer' : 'still needed'}</strong>
+        <p>{projectedIsBuffer ? money(change.projected.difference) + ' above' : money(Math.abs(change.projected.difference)) + ' below'} the planning target.</p>
+        {existing && <small>This edit {change.paidHoursChange < 0 ? 'removes' : 'adds'} {Math.abs(change.paidHoursChange).toFixed(2)} paid hours and {change.earningsChange < 0 ? 'uses' : 'adds'} {money(Math.abs(change.earningsChange))} of the earnings cushion.</small>}
       </div>
 
       <details>

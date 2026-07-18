@@ -1,5 +1,6 @@
 import type { PlannerState, Shift } from '../domain/types'
 import { calendarEventToShift } from '../domain/calendarShift'
+import { defaultPayRules } from '../domain/rules'
 import { calendarShiftEvents } from './calendarSnapshot'
 
 export const templates = {
@@ -24,6 +25,11 @@ const verifiedShifts: Shift[] = [
 const calendarShifts = calendarShiftEvents.map(calendarEventToShift).filter((shift): shift is Shift => shift !== null)
 
 export const defaultState: PlannerState = {
+  profile: {
+    id: 'loren',
+    firstName: 'Loren',
+    employer: 'Phyllis Tuckwell',
+  },
   shifts: [...verifiedShifts, ...calendarShifts],
   settings: {
     assessmentStart: '2026-06-09',
@@ -31,4 +37,21 @@ export const defaultState: PlannerState = {
     assessmentTarget: 2643.68,
     manualHolidayHours: 3.25,
   },
+  payRules: structuredClone(defaultPayRules),
+}
+
+export function newProfileState(profile: PlannerState['profile'], settings: PlannerState['settings'], baseRate: number): PlannerState {
+  return {
+    profile,
+    shifts: [],
+    settings,
+    payRules: {
+      ...structuredClone(defaultPayRules),
+      baseRate,
+      weekdayNightMultiplier: 1,
+      saturdayMultiplier: 1,
+      sundayMultiplier: 1,
+      publicHolidayMultiplier: 1,
+    },
+  }
 }
