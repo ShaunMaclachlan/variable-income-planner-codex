@@ -48,4 +48,16 @@ describe('calendar shift wording policy', () => {
       end: '2026-08-01T16:00:00+01:00',
     }))).toMatchObject({ breakMinutes: 20 })
   })
+
+  it('accepts recognised shift wording for a generic work-calendar profile', () => {
+    expect(calendarEventToShift(event({
+      summary: 'Night shift',
+      start: '2026-08-01T19:00:00+01:00',
+      end: '2026-08-02T07:30:00+01:00',
+    }), 'generic')).toMatchObject({ label: 'Night', start: '19:00', end: '07:30' })
+  })
+
+  it('still ignores unrelated entries in a generic work calendar', () => {
+    expect(calendarEventToShift(event({ summary: 'Dentist appointment' }), 'generic')).toBeNull()
+  })
 })

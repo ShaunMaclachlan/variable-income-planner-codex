@@ -22,6 +22,7 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
   const handledRequest = useRef(0)
+  const workMode = /phyllis\s*tuckwell/i.test(state.profile.employer) ? 'loren' as const : 'generic' as const
 
   const prepareReview = useCallback((text: string, connection?: CalendarConnection) => {
     const parsed = parseIcsCalendar(text)
@@ -31,11 +32,13 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
       state.settings.assessmentStart,
       state.settings.assessmentEnd,
       parsed.warnings,
+      undefined,
+      workMode,
     )
     setPlan(nextPlan)
     setPendingConnection(connection)
     setStatus(`Checked ${parsed.events.length} timed calendar events.`)
-  }, [state.settings.assessmentEnd, state.settings.assessmentStart, state.shifts])
+  }, [state.settings.assessmentEnd, state.settings.assessmentStart, state.shifts, workMode])
 
   const checkConnection = useCallback(async (connection: CalendarConnection) => {
     setLoading(true)
@@ -127,7 +130,7 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
         <button className="primary-button" disabled={loading} onClick={() => void checkConnection(state.calendarConnection!)}>{loading ? 'Checking calendar…' : 'Sync calendar now'}</button>
         <button className="text-button disconnect-button" onClick={disconnect}>Disconnect calendar</button>
       </> : <>
-        <p className="calendar-intro">Paste the read-only subscription link for Loren’s work rota. VIP will only consider recognised Phyllis Tuckwell work entries inside the assessment period.</p>
+        <p className="calendar-intro">Paste the read-only subscription link for {state.profile.firstName}’s work rota. VIP will only consider {workMode === 'loren' ? 'recognised Phyllis Tuckwell work entries' : 'recognised Early, Late, Long day, Night or Training entries'} inside the assessment period.</p>
         <label className="calendar-url">Calendar subscription link<input type="url" value={url} placeholder="webcal://… or https://…/calendar.ics" onChange={(event) => setUrl(event.target.value)} /></label>
         <button className="primary-button" disabled={loading || !url.trim()} onClick={connect}>{loading ? 'Checking calendar…' : 'Connect and check calendar'}</button>
         <details className="calendar-help">
@@ -135,7 +138,7 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
           <ol>
             <li>In Calendar, tap <strong>Calendars</strong>, then the information button beside the work calendar.</li>
             <li>If it is a subscribed iRota calendar, use its original subscription link.</li>
-            <li>If it is an iCloud calendar, only share a separate work calendar—not Loren’s personal calendar.</li>
+            <li>If it is an iCloud calendar, only share a separate work calendar—not {state.profile.firstName}’s personal calendar.</li>
           </ol>
           <p>A public iCloud link is read-only, but anyone who obtains it can view that calendar.</p>
           <a href="https://support.apple.com/guide/iphone/share-icloud-calendars-iph7613c4fb/ios" target="_blank" rel="noreferrer">Open Apple’s sharing instructions</a>
