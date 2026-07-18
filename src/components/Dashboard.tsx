@@ -12,14 +12,23 @@ export function Dashboard({ state, rules, onPlan }: Props) {
   const month = totalFor(monthShifts, rules)
   const upcoming = state.shifts.filter((shift) => shift.status !== 'cancelled' && shift.date >= today.toISODate()!).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3)
   const differenceLabel = assessment.difference >= 0 ? `${money(assessment.difference)} buffer` : `${money(Math.abs(assessment.difference))} remaining`
+  const hoursLabel = `${Math.abs(assessment.bufferHours).toFixed(1)} base-rate hours`
+  const exampleHours = Math.max(0, assessment.bufferHours - 2)
 
   return <>
-    <section className="welcome"><span>{today.toFormat('cccc d LLLL')}</span><h1>Good {today.hour < 12 ? 'morning' : today.hour < 18 ? 'afternoon' : 'evening'}, Loren</h1></section>
+    <section className="welcome"><span>{today.toFormat('cccc d LLLL')}{state.profile.employer ? ` · ${state.profile.employer}` : ''}</span><h1>Good {today.hour < 12 ? 'morning' : today.hour < 18 ? 'afternoon' : 'evening'}, {state.profile.firstName}</h1></section>
     <section className="card hero-card">
       <span className="eyebrow">What needs your attention</span>
       <h2>{assessment.difference >= 0 ? 'Your recorded earnings are above the planning target' : 'Your assessment target still needs attention'}</h2>
-      <p>{differenceLabel}. Add a proposed shift to see exactly what changes.</p>
+      <p>{differenceLabel} · {hoursLabel}. Add or edit a shift to see exactly what changes.</p>
       <button className="hero-button" onClick={onPlan}>Plan a shift</button>
+    </section>
+    <section className={`card buffer-card ${assessment.difference >= 0 ? 'safe' : 'short'}`}>
+      <div className="section-heading"><div><span className="eyebrow">Room to change</span><h2>{assessment.difference >= 0 ? 'Your earnings cushion' : 'Hours still needed'}</h2></div></div>
+      <div className="buffer-number"><strong>{Math.abs(assessment.bufferHours).toFixed(2)}h</strong><span>at the base rate of {money(rules.baseRate)}/hour</span></div>
+      {assessment.difference >= 0
+        ? <p>A weekday early shift changing from 3pm to 1pm uses 2 paid hours and would leave about <strong>{exampleHours.toFixed(2)} hours</strong> of cushion. Edit the actual shift for its exact enhanced-rate result.</p>
+        : <p>This is the base-rate equivalent. An enhanced shift may cover the gap in fewer paid hours.</p>}
     </section>
     <section className="card">
       <div className="section-heading"><div><span className="eyebrow">Childcare</span><h2>Assessment progress</h2></div><span className={assessment.difference >= 0 ? 'status good' : 'status warning'}>{assessment.difference >= 0 ? 'Above target' : 'In progress'}</span></div>

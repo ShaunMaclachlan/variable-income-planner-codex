@@ -38,6 +38,8 @@ The domain engine is the source of truth. These decisions reflect the contract i
 - The assessment period is **9 June–9 September 2026**, inclusive.
 - The planning target is **£2,643.68**.
 - Childcare progress uses expected earnings for shifts whose start date falls inside the assessment period, not the later cash pay date.
+- The hours cushion is the monetary buffer divided by the profile's base hourly rate. It is labelled **base-rate hours** because enhanced Saturday, Sunday, night or public-holiday hours consume a different amount of monetary buffer.
+- Editing a shift uses the actual segmented pay calculation to show the exact resulting monetary and base-rate-hours position.
 - July includes **3.25 paid-holiday hours** at base rate.
 - Payroll cutoff is the last Saturday of the month, inclusive.
 - A shift crossing the cutoff is allocated using its start date.

@@ -51,7 +51,15 @@ export interface PlannerSettings {
   manualHolidayHours: number
 }
 
+export interface PlannerProfile {
+  id: string
+  firstName: string
+  employer: string
+}
+
 export interface PlannerState {
+  profile: PlannerProfile
   shifts: Shift[]
   settings: PlannerSettings
+  payRules: PayRules
 }
