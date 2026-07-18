@@ -9,6 +9,7 @@ export interface CalendarShiftInput {
   end: string
   status: ShiftStatus
   confirmedEnd?: string
+  calendarEventId?: string
 }
 
 const ZONE = 'Europe/London'
@@ -34,6 +35,7 @@ export function calendarEventToShift(event: CalendarShiftInput): Shift | null {
     status: event.status,
     source: event.confirmedEnd ? 'email' as const : 'calendar' as const,
     sourceTitle: title,
+    calendarEventId: event.calendarEventId ?? event.id,
   }
 
   if (normalisedTitle.includes('early')) {

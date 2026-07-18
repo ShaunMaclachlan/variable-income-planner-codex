@@ -2,10 +2,10 @@ import { DateTime } from 'luxon'
 import { assessmentSummary, totalFor } from '../domain/summaries'
 import type { PayRules, PlannerState } from '../domain/types'
 
-interface Props { state: PlannerState; rules: PayRules; onPlan: () => void }
+interface Props { state: PlannerState; rules: PayRules; onPlan: () => void; onCalendar: () => void }
 const money = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value)
 
-export function Dashboard({ state, rules, onPlan }: Props) {
+export function Dashboard({ state, rules, onPlan, onCalendar }: Props) {
   const assessment = assessmentSummary(state.shifts, rules, state.settings)
   const today = DateTime.now().setZone(rules.zone)
   const monthShifts = state.shifts.filter((shift) => shift.date.startsWith(today.toFormat('yyyy-MM')))
@@ -29,6 +29,11 @@ export function Dashboard({ state, rules, onPlan }: Props) {
       {assessment.difference >= 0
         ? <p>A weekday early shift changing from 3pm to 1pm uses 2 paid hours and would leave about <strong>{exampleHours.toFixed(2)} hours</strong> of cushion. Edit the actual shift for its exact enhanced-rate result.</p>
         : <p>This is the base-rate equivalent. An enhanced shift may cover the gap in fewer paid hours.</p>}
+    </section>
+    <section className="card calendar-home-card">
+      <div className="section-heading"><div><span className="eyebrow">Calendar</span><h2>{state.calendarConnection ? 'Check for rota changes' : 'Connect your work calendar'}</h2></div>{state.calendarConnection && <span className="status good">Connected</span>}</div>
+      <p>{state.calendarConnection ? 'VIP will check for new or changed shifts and show them before updating your forecast.' : 'Use a read-only Apple, iCloud or subscribed rota calendar link.'}</p>
+      <button className="secondary-button calendar-home-button" onClick={onCalendar}>{state.calendarConnection ? 'Sync calendar' : 'Connect calendar'}</button>
     </section>
     <section className="card">
       <div className="section-heading"><div><span className="eyebrow">Childcare</span><h2>Assessment progress</h2></div><span className={assessment.difference >= 0 ? 'status good' : 'status warning'}>{assessment.difference >= 0 ? 'Above target' : 'In progress'}</span></div>

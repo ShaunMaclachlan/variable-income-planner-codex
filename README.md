@@ -26,7 +26,8 @@ npm run check
 - childcare assessment-period progress
 - monetary and base-rate-equivalent hours buffer, including the exact effect of editing a shift
 - payroll cutoff and previous-working-day payday forecasting
-- calendar snapshot normalisation where the shift title wins over conflicting event hours
+- read-only Apple/iCloud/iRota `.ics` calendar checks with review-before-apply and file fallback
+- calendar normalisation where the shift title wins over conflicting event hours
 - on-device profiles and persistence; no secure account or cloud sync yet
 
 Read [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) before relying on forecasts. Product questions that remain after the first build are recorded in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
