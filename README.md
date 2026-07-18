@@ -28,6 +28,8 @@ npm run check
 - payroll cutoff and previous-working-day payday forecasting
 - read-only Apple/iCloud/iRota `.ics` calendar checks with review-before-apply and file fallback
 - calendar normalisation where the shift title wins over conflicting event hours
-- on-device profiles and persistence; no secure account or cloud sync yet
+- local-first profiles with optional Supabase cloud backup protected by anonymous authentication and Row Level Security
 
 Read [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) before relying on forecasts. Product questions that remain after the first build are recorded in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
+
+Supabase activation and deployment steps are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
