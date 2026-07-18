@@ -1,0 +1,39 @@
+.impact-grid small {
+  display: block;
+  color: var(--muted);
+  font-size: .72rem;
+  margin-top: 3px;
+}
+
+.snapshot-note {
+  margin: 0 4px 14px;
+  padding: 10px 12px;
+  border: 1px solid #cfe3fb;
+  border-radius: 13px;
+  background: #eef6ff;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.inline-warning {
+  padding: 10px 12px;
+  border: 1px solid #fedf89;
+  border-radius: 13px;
+  background: #fffaeb;
+  color: var(--amber);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.shift-copy em {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: .67rem;
+  font-style: normal;
+  font-weight: 800;
+}

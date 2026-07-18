@@ -1,0 +1,30 @@
+# Phase 1 product brief
+
+## User and job
+
+The first user is Loren, a Phyllis Tuckwell bank worker. The MVP helps her understand the gross financial effect and payroll timing of a proposed shift before accepting it.
+
+Within five seconds the home screen should show:
+
+1. Where she stands in the current childcare assessment period.
+2. What needs attention.
+3. What changes if she adds another shift.
+
+## Included
+
+- add, edit and remove shifts
+- selectable 1pm, 2pm and 3pm early finishes
+- early, late, long-day, night and training templates
+- calendar-title normalisation ready for a future live connector
+- segment pay at UK local-time and day boundaries
+- gross pay, payroll timing and holiday accrual
+- assessment-period progress and buffer/shortfall
+- local persistence and reset to confirmed seed plus calendar snapshot
+- calculation breakdowns and explicit decisions
+
+## Excluded from this vertical slice
+
+- live rota/calendar import
+- payslip ingestion and net-pay calculation
+- authentication, cloud sync and multiple users
+- automated eligibility decisions or advice to accept or decline a shift
