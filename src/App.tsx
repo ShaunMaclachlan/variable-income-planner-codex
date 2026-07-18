@@ -111,6 +111,7 @@ export default function App() {
                       <span>{shift.start}–{shift.end} · {result.paidHours.toFixed(1)} paid hours</span>
                       <small>{formatPayrollMonth(forecastPayDate(shift, rules))} payroll · {shift.status}</small>
                       {shift.source === 'calendar' && <em title={shift.sourceTitle}>Calendar wording used</em>}
+                      {shift.source === 'email' && <em title={shift.sourceTitle}>Email update applied</em>}
                     </div>
                     <div className="shift-actions">
                       <strong>{shift.status === 'cancelled' ? 'Excluded' : money(result.gross)}</strong>

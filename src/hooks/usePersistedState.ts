@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { defaultState } from '../data/defaults'
 import type { PlannerState } from '../domain/types'
 
-const KEY = 'vip-planner-v0.2'
+const KEY = 'vip-planner-v0.3'
 
 function loadState(): PlannerState {
   try {

@@ -8,6 +8,7 @@ export interface CalendarShiftInput {
   start: string
   end: string
   status: ShiftStatus
+  confirmedEnd?: string
 }
 
 const ZONE = 'Europe/London'
@@ -31,12 +32,12 @@ export function calendarEventToShift(event: CalendarShiftInput): Shift | null {
     id: event.id,
     date: calendarStart.toISODate()!,
     status: event.status,
-    source: 'calendar' as const,
+    source: event.confirmedEnd ? 'email' as const : 'calendar' as const,
     sourceTitle: title,
   }
 
   if (normalisedTitle.includes('early')) {
-    const recordedFinish = calendarEnd.toFormat('HH:mm')
+    const recordedFinish = event.confirmedEnd ?? calendarEnd.toFormat('HH:mm')
     return {
       ...common,
       label: 'Early',
@@ -46,7 +47,7 @@ export function calendarEventToShift(event: CalendarShiftInput): Shift | null {
     }
   }
   if (normalisedTitle.includes('late')) {
-    return { ...common, label: 'Late', start: '13:00', end: '21:00', breakMinutes: 60 }
+    return { ...common, label: 'Late', start: '12:00', end: '20:00', breakMinutes: 60 }
   }
   if (normalisedTitle.includes('long day')) {
     return { ...common, label: 'Long day', start: '07:00', end: '20:00', breakMinutes: 60 }

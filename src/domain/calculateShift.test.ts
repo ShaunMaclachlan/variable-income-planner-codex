@@ -20,7 +20,7 @@ describe('golden shift calculations', () => {
   it.each([
     ['weekday early', {}, 7, 125.3],
     ['Saturday early', { date: '2026-06-27' }, 7, 162.89],
-    ['Sunday late', { date: '2026-06-28', start: '13:00', end: '20:00' }, 6, 171.84],
+    ['Sunday late', { date: '2026-06-28', start: '12:00', end: '20:00' }, 7, 200.48],
     [
       'Friday into Saturday',
       { date: '2026-07-10', start: '19:00', end: '07:00', breakMinutes: 30 },

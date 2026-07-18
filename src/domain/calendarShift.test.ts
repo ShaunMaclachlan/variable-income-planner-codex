@@ -21,12 +21,20 @@ describe('calendar shift wording policy', () => {
     expect(calendarEventToShift(event({ end: '2026-08-01T14:00:00+01:00' }))).toMatchObject({ end: '14:00' })
   })
 
-  it('normalises a late title to the standard 1pm–9pm shift', () => {
+  it('normalises a late title to the confirmed 12pm–8pm shift', () => {
     expect(calendarEventToShift(event({
       summary: 'Late shift - Phyllis Tuckwell',
       start: '2026-08-01T12:00:00+01:00',
       end: '2026-08-01T20:00:00+01:00',
-    }))).toMatchObject({ label: 'Late', start: '13:00', end: '21:00' })
+    }))).toMatchObject({ label: 'Late', start: '12:00', end: '20:00' })
+  })
+
+  it('lets a confirmed email finish override the calendar finish', () => {
+    expect(calendarEventToShift(event({ confirmedEnd: '13:00' }))).toMatchObject({
+      label: 'Early',
+      end: '13:00',
+      source: 'email',
+    })
   })
 
   it('excludes unrelated training entries', () => {

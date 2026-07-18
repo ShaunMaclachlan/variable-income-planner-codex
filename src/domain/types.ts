@@ -1,5 +1,5 @@
 export type ShiftStatus = 'worked' | 'planned' | 'cancelled'
-export type ShiftSource = 'confirmed' | 'calendar' | 'manual'
+export type ShiftSource = 'confirmed' | 'calendar' | 'email' | 'manual'
 
 export interface Shift {
   id: string

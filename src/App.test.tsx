@@ -35,4 +35,12 @@ describe('VIP app', () => {
     expect(screen.getByRole('option', { name: '2pm' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: '3pm' })).toBeInTheDocument()
   })
+
+  it('uses the confirmed 12pm–8pm late template', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Plan a shift' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Late' }))
+    expect(screen.getByLabelText('Starts')).toHaveValue('12:00')
+    expect(screen.getByLabelText('Finishes')).toHaveValue('20:00')
+  })
 })
