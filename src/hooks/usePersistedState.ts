@@ -1,12 +1,18 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { defaultState } from '../data/defaults'
 import { defaultPayRules } from '../domain/rules'
 import type { PlannerState } from '../domain/types'
+import {
+  isSupabaseConfigured,
+  loadCloudStore,
+  saveCloudStore,
+  type CloudSyncStatus,
+} from '../services/supabaseSync'
 
 const KEY = 'vip-planner-v0.4'
 const LEGACY_KEY = 'vip-planner-v0.3'
 
-interface PlannerStore {
+export interface PlannerStore {
   activeProfileId: string | null
   profiles: PlannerState[]
 }
@@ -21,19 +27,26 @@ function normaliseState(value: Partial<PlannerState>, fallback: PlannerState): P
   }
 }
 
+function normaliseStore(value: Partial<PlannerStore>): PlannerStore {
+  const profiles = Array.isArray(value.profiles)
+    ? value.profiles.map((profile) => normaliseState(
+      profile,
+      profile.profile?.id === 'loren' ? defaultState : profile as PlannerState,
+    ))
+    : []
+
+  return {
+    activeProfileId: profiles.some((profile) => profile.profile.id === value.activeProfileId)
+      ? value.activeProfileId!
+      : null,
+    profiles: profiles.length > 0 ? profiles : [structuredClone(defaultState)],
+  }
+}
+
 function loadStore(): PlannerStore {
   try {
     const saved = localStorage.getItem(KEY)
-    if (saved) {
-      const parsed = JSON.parse(saved) as Partial<PlannerStore>
-      const profiles = Array.isArray(parsed.profiles)
-        ? parsed.profiles.map((profile) => normaliseState(profile, profile.profile?.id === 'loren' ? defaultState : profile as PlannerState))
-        : []
-      return {
-        activeProfileId: profiles.some((profile) => profile.profile.id === parsed.activeProfileId) ? parsed.activeProfileId! : null,
-        profiles: profiles.length > 0 ? profiles : [structuredClone(defaultState)],
-      }
-    }
+    if (saved) return normaliseStore(JSON.parse(saved) as Partial<PlannerStore>)
 
     const legacy = localStorage.getItem(LEGACY_KEY)
     if (legacy) {
@@ -50,9 +63,76 @@ function loadStore(): PlannerStore {
   return { activeProfileId: null, profiles: [structuredClone(defaultState)] }
 }
 
+function messageFrom(error: unknown): string {
+  return error instanceof Error ? error.message : 'Cloud backup failed'
+}
+
 export function usePersistedState() {
   const [store, setStoreValue] = useState<PlannerStore>(loadStore)
+  const [cloudStatus, setCloudStatus] = useState<CloudSyncStatus>(
+    isSupabaseConfigured ? 'connecting' : 'disabled',
+  )
+  const [cloudError, setCloudError] = useState<string>()
+  const latestStore = useRef(store)
+  const cloudReady = useRef(false)
   const state = store.profiles.find((profile) => profile.profile.id === store.activeProfileId)
+
+  useEffect(() => {
+    latestStore.current = store
+  }, [store])
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+    let cancelled = false
+
+    const initialiseCloud = async () => {
+      try {
+        const remote = await loadCloudStore<Partial<PlannerStore>>()
+        if (cancelled) return
+
+        if (remote) {
+          const next = normaliseStore(remote)
+          latestStore.current = next
+          localStorage.setItem(KEY, JSON.stringify(next))
+          cloudReady.current = true
+          setStoreValue(next)
+        } else {
+          await saveCloudStore(latestStore.current)
+          if (cancelled) return
+          cloudReady.current = true
+        }
+
+        setCloudError(undefined)
+        setCloudStatus('synced')
+      } catch (error) {
+        if (cancelled) return
+        setCloudError(messageFrom(error))
+        setCloudStatus('error')
+      }
+    }
+
+    void initialiseCloud()
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !cloudReady.current) return
+    setCloudStatus('saving')
+
+    const timer = window.setTimeout(() => {
+      void saveCloudStore(store)
+        .then(() => {
+          setCloudError(undefined)
+          setCloudStatus('synced')
+        })
+        .catch((error) => {
+          setCloudError(messageFrom(error))
+          setCloudStatus('error')
+        })
+    }, 750)
+
+    return () => window.clearTimeout(timer)
+  }, [store])
 
   const saveStore = useCallback((update: (current: PlannerStore) => PlannerStore) => {
     setStoreValue((current) => {
@@ -95,5 +175,15 @@ export function usePersistedState() {
     setState(value)
   }, [setState, state])
 
-  return { state, profiles: store.profiles, setState, selectProfile, createProfile, signOut, reset }
+  return {
+    state,
+    profiles: store.profiles,
+    setState,
+    selectProfile,
+    createProfile,
+    signOut,
+    reset,
+    cloudStatus,
+    cloudError,
+  }
 }
