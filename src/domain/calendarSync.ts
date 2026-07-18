@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { calendarEventToShift, type CalendarShiftInput } from './calendarShift'
+import { calendarEventToShift, type CalendarShiftInput, type CalendarWorkMode } from './calendarShift'
 import type { Shift } from './types'
 
 export interface CalendarUpdate {
@@ -32,11 +32,12 @@ export function buildCalendarSyncPlan(
   assessmentEnd: string,
   warnings: string[] = [],
   asOfDate: string = DateTime.now().setZone('Europe/London').toISODate()!,
+  workMode: CalendarWorkMode = 'loren',
 ): CalendarSyncPlan {
   const plan: CalendarSyncPlan = { additions: [], updates: [], links: [], protected: [], unchanged: 0, ignored: 0, warnings }
 
   events.forEach((event) => {
-    const calendarShift = calendarEventToShift(event)
+    const calendarShift = calendarEventToShift(event, workMode)
     if (!calendarShift || calendarShift.date < assessmentStart || calendarShift.date > assessmentEnd) {
       plan.ignored += 1
       return

@@ -127,4 +127,18 @@ END:VCALENDAR`
     expect(screen.getByLabelText('Base hourly rate (£)')).toHaveValue(20)
     expect(screen.getByText('Not set')).toBeInTheDocument()
   })
+
+  it('personalises calendar setup for another user', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Create another profile' }))
+    fireEvent.change(screen.getByLabelText('First name'), { target: { value: 'Alex' } })
+    fireEvent.change(screen.getByLabelText('Employer (optional)'), { target: { value: 'Example Care' } })
+    fireEvent.change(screen.getByLabelText('Base hourly rate (£)'), { target: { value: '20' } })
+    fireEvent.change(screen.getByLabelText('Assessment target (£)'), { target: { value: '2500' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create my plan' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Connect calendar' }))
+
+    expect(screen.getByText(/Alex’s work rota/)).toBeInTheDocument()
+    expect(screen.queryByText(/Loren’s work rota/)).not.toBeInTheDocument()
+  })
 })

@@ -22,7 +22,7 @@ const verifiedShifts: Shift[] = [
   { id: '2026-06-30-late', label: 'Late', date: '2026-06-30', start: '12:00', end: '20:00', breakMinutes: 60, status: 'worked', source: 'confirmed' },
 ]
 
-const calendarShifts = calendarShiftEvents.map(calendarEventToShift).filter((shift): shift is Shift => shift !== null)
+const calendarShifts = calendarShiftEvents.map((event) => calendarEventToShift(event)).filter((shift): shift is Shift => shift !== null)
 
 export const defaultState: PlannerState = {
   profile: {
