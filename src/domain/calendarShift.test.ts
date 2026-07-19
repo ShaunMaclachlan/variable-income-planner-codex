@@ -4,7 +4,7 @@ import { calendarEventToShift, type CalendarShiftInput } from './calendarShift'
 function event(overrides: Partial<CalendarShiftInput> = {}): CalendarShiftInput {
   return {
     id: 'calendar-fixture',
-    summary: 'Early shift Phyllis Tuckwell',
+    summary: 'Early shift Example Employer',
     start: '2026-08-01T15:00:00+01:00',
     end: '2026-08-01T22:00:00+01:00',
     status: 'planned',
@@ -23,7 +23,7 @@ describe('calendar shift wording policy', () => {
 
   it('normalises a late title to the confirmed 12pm–8pm shift', () => {
     expect(calendarEventToShift(event({
-      summary: 'Late shift - Phyllis Tuckwell',
+      summary: 'Late shift - Example Employer',
       start: '2026-08-01T12:00:00+01:00',
       end: '2026-08-01T20:00:00+01:00',
     }))).toMatchObject({ label: 'Late', start: '12:00', end: '20:00' })
@@ -38,12 +38,12 @@ describe('calendar shift wording policy', () => {
   })
 
   it('excludes unrelated training entries', () => {
-    expect(calendarEventToShift(event({ summary: 'Summer training' }))).toBeNull()
+    expect(calendarEventToShift(event({ summary: 'Summer picnic' }))).toBeNull()
   })
 
   it('applies the 20-minute minimum assumption to long work training', () => {
     expect(calendarEventToShift(event({
-      summary: 'Syringe pump training',
+      summary: 'Equipment training',
       start: '2026-08-01T09:00:00+01:00',
       end: '2026-08-01T16:00:00+01:00',
     }))).toMatchObject({ breakMinutes: 20 })
