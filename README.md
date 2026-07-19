@@ -29,9 +29,9 @@ npm run check
 - monetary and base-rate-equivalent hours buffer, including the exact effect of editing a shift
 - payroll cutoff and previous-working-day payday forecasting
 - read-only Apple/iCloud/iRota `.ics` calendar checks with review-before-apply and file fallback
-- calendar normalisation where the shift title wins over conflicting event hours
-- local-first profiles; experimental cloud code is not enabled in the public build
+- calendar imports that preserve source times and flag template deviations for review
+- local-first profiles with passphrase-encrypted export/import recovery; no pilot cloud sync
 
-Read [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) before relying on forecasts. Product questions that remain after the first build are recorded in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
+Read [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) before relying on forecasts. The evidence worksheet is in [docs/PILOT_EVIDENCE.md](docs/PILOT_EVIDENCE.md), and the proposal to challenge is [docs/NEXT_PHASE_PROPOSAL.md](docs/NEXT_PHASE_PROPOSAL.md).
 
-Experimental Supabase setup notes are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md); cloud state is not approved for the pilot.
+The pilot deliberately has no cloud state. Calendar bearer links stay only in the active browser profile and are excluded from encrypted backups.

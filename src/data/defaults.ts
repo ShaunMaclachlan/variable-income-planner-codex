@@ -1,4 +1,5 @@
 import type { PlannerState } from '../domain/types'
+import { poundsToPence } from '../domain/money'
 import { defaultPayRules } from '../domain/rules'
 
 export const templates = {
@@ -21,20 +22,21 @@ export const defaultState: PlannerState = {
   settings: {
     assessmentStart: '2026-07-01',
     assessmentEnd: '2026-09-30',
-    assessmentTarget: 2500,
+    assessmentTargetPence: 250000,
     manualHolidayHours: 0,
+    manualHolidayDate: '',
   },
   payRules: structuredClone(defaultPayRules),
 }
 
-export function newProfileState(profile: PlannerState['profile'], settings: PlannerState['settings'], baseRate: number): PlannerState {
+export function newProfileState(profile: PlannerState['profile'], settings: PlannerState['settings'], baseRatePounds: number): PlannerState {
   return {
     profile,
     shifts: [],
     settings,
     payRules: {
       ...structuredClone(defaultPayRules),
-      baseRate,
+      ratePeriods: [{ effectiveFrom: settings.assessmentStart, hourlyRatePence: poundsToPence(baseRatePounds) }],
       weekdayNightMultiplier: 1,
       saturdayMultiplier: 1,
       sundayMultiplier: 1,

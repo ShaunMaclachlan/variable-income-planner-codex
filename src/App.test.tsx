@@ -42,6 +42,7 @@ describe('VIP app', () => {
     expect(screen.getByText('Current contract rules')).toBeInTheDocument()
     expect(screen.getByText('Public holiday worked')).toBeInTheDocument()
     expect(screen.getByText(/Highest-rate hours first/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Encrypted device backup' })).toBeInTheDocument()
   })
 
   it('offers all three confirmed early finish choices', () => {

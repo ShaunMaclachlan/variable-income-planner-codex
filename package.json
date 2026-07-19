@@ -9,7 +9,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "check": "npm run lint && npm run test && npm run build"
+    "safety": "node scripts/check-public-fixtures.mjs",
+    "check": "npm run safety && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",

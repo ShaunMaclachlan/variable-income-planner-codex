@@ -2,7 +2,7 @@ import type { PayRules } from './types'
 
 export const defaultPayRules: PayRules = {
   zone: 'Europe/London',
-  baseRate: 17.9,
+  ratePeriods: [{ effectiveFrom: '2026-01-01', hourlyRatePence: 1790 }],
   weekdayNightMultiplier: 1.3,
   saturdayMultiplier: 1.3,
   sundayMultiplier: 1.6,

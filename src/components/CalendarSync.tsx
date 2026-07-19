@@ -32,13 +32,15 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
       state.settings.assessmentStart,
       state.settings.assessmentEnd,
       parsed.warnings,
-      undefined,
       workMode,
+      connection?.url === state.calendarConnection?.url
+        ? state.calendarConnection?.importedEventIds ?? []
+        : [],
     )
     setPlan(nextPlan)
     setPendingConnection(connection)
     setStatus(`Checked ${parsed.events.length} timed calendar events.`)
-  }, [state.settings.assessmentEnd, state.settings.assessmentStart, state.shifts, workMode])
+  }, [state.calendarConnection?.importedEventIds, state.calendarConnection?.url, state.settings.assessmentEnd, state.settings.assessmentStart, state.shifts, workMode])
 
   const checkConnection = useCallback(async (connection: CalendarConnection) => {
     setLoading(true)
@@ -95,14 +97,14 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
       ...current,
       shifts: applyCalendarSyncPlan(current.shifts, plan),
       calendarConnection: pendingConnection
-        ? { ...pendingConnection, lastSyncedAt: syncedAt }
-        : current.calendarConnection
-          ? { ...current.calendarConnection, lastSyncedAt: syncedAt }
-          : undefined,
+        ? { ...pendingConnection, lastSyncedAt: syncedAt, importedEventIds: plan.observedEventIds }
+        : current.calendarConnection,
     }))
     setPlan(null)
     setPendingConnection(undefined)
-    setStatus('Calendar sync applied. Your forecast and hours cushion are up to date.')
+    setStatus(plan.potentialDuplicates.length > 0
+      ? 'Reviewed changes applied. Potential duplicates remain unapplied for manual resolution.'
+      : 'Calendar sync applied. Your forecast and hours cushion are up to date.')
   }
 
   const disconnect = () => {
@@ -113,7 +115,7 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
     setStatus('Calendar disconnected. Existing shifts were kept.')
   }
 
-  const changes = plan ? plan.additions.length + plan.updates.length : 0
+  const changes = plan ? plan.additions.length + plan.updates.length + plan.removals.length : 0
 
   return <>
     <section className="card calendar-card">
@@ -158,13 +160,17 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
       <div className="sync-counts">
         <div><strong>{plan.additions.length}</strong><span>New</span></div>
         <div><strong>{plan.updates.length}</strong><span>Changed</span></div>
+        <div><strong>{plan.removals.length}</strong><span>Missing</span></div>
         <div><strong>{plan.protected.length}</strong><span>Protected</span></div>
+        <div><strong>{plan.potentialDuplicates.length}</strong><span>Needs review</span></div>
         <div><strong>{plan.unchanged}</strong><span>Same</span></div>
       </div>
 
       {plan.additions.map((shift) => <div className="sync-row" key={`add-${shift.id}`}><span className="sync-badge add">New</span><div><strong>{shiftDescription(shift)}</strong><small>{shift.sourceTitle}</small></div></div>)}
       {plan.updates.map(({ before, after }) => <div className="sync-row" key={`update-${before.id}`}><span className="sync-badge change">Change</span><div><strong>{shiftDescription(after)}</strong><small>Was {before.start}–{before.end}</small></div></div>)}
+      {plan.removals.map(({ before }) => <div className="sync-row" key={`remove-${before.id}`}><span className="sync-badge change">Missing</span><div><strong>{shiftDescription(before)}</strong><small>No longer appears in the same calendar feed. Applying will mark it cancelled, not delete it.</small></div></div>)}
       {plan.protected.map((shift) => <div className="sync-row" key={`protected-${shift.id}`}><span className="sync-badge keep">Kept</span><div><strong>{shiftDescription(shift)}</strong><small>{shift.source === 'email' ? 'Email override takes priority' : 'Manual or confirmed entry takes priority'}</small></div></div>)}
+      {plan.potentialDuplicates.map(({ before, after }) => <div className="sync-row" key={`duplicate-${after.id}`}><span className="sync-badge keep">Review</span><div><strong>{shiftDescription(after)}</strong><small>Possible duplicate of {shiftDescription(before)}. VIP has not linked or applied it; resolve it manually.</small></div></div>)}
 
       {plan.ignored > 0 && <p className="fine-print">Ignored {plan.ignored} unrelated or out-of-period events.</p>}
       {plan.warnings.map((warning) => <p className="inline-warning" key={warning}>{warning}</p>)}

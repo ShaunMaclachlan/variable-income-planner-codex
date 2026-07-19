@@ -1,5 +1,4 @@
-import { DateTime } from 'luxon'
-import { calendarEventToShift, type CalendarShiftInput, type CalendarWorkMode } from './calendarShift'
+import { calendarEventToShift, calendarTemplateWarning, type CalendarShiftInput, type CalendarWorkMode } from './calendarShift'
 import type { Shift } from './types'
 
 export interface CalendarUpdate {
@@ -10,11 +9,14 @@ export interface CalendarUpdate {
 export interface CalendarSyncPlan {
   additions: Shift[]
   updates: CalendarUpdate[]
+  removals: CalendarUpdate[]
   links: CalendarUpdate[]
   protected: Shift[]
+  potentialDuplicates: CalendarUpdate[]
   unchanged: number
   ignored: number
   warnings: string[]
+  observedEventIds: string[]
 }
 
 const protectedSources = new Set(['email', 'manual', 'confirmed'])
@@ -22,7 +24,6 @@ const comparable = (shift: Shift) => [shift.date, shift.label, shift.start, shif
 
 function findExisting(shifts: Shift[], incoming: Shift) {
   return shifts.find((shift) => shift.calendarEventId === incoming.calendarEventId)
-    ?? shifts.find((shift) => shift.date === incoming.date && shift.label === incoming.label)
 }
 
 export function buildCalendarSyncPlan(
@@ -31,10 +32,13 @@ export function buildCalendarSyncPlan(
   assessmentStart: string,
   assessmentEnd: string,
   warnings: string[] = [],
-  asOfDate: string = DateTime.now().setZone('Europe/London').toISODate()!,
   workMode: CalendarWorkMode = 'generic',
+  previousEventIds: string[] = [],
 ): CalendarSyncPlan {
-  const plan: CalendarSyncPlan = { additions: [], updates: [], links: [], protected: [], unchanged: 0, ignored: 0, warnings }
+  const plan: CalendarSyncPlan = {
+    additions: [], updates: [], removals: [], links: [], protected: [], potentialDuplicates: [],
+    unchanged: 0, ignored: 0, warnings: [...warnings], observedEventIds: [],
+  }
 
   events.forEach((event) => {
     const calendarShift = calendarEventToShift(event, workMode)
@@ -42,11 +46,17 @@ export function buildCalendarSyncPlan(
       plan.ignored += 1
       return
     }
-    const incoming = calendarShift.status === 'planned' && calendarShift.date < asOfDate
-      ? { ...calendarShift, status: 'worked' as const }
-      : calendarShift
+    const incoming = calendarShift
+    plan.observedEventIds.push(incoming.calendarEventId!)
+    const templateWarning = calendarTemplateWarning(incoming)
+    if (templateWarning) plan.warnings.push(templateWarning)
     const existing = findExisting(existingShifts, incoming)
     if (!existing) {
+      const possibleDuplicate = existingShifts.find((shift) => shift.date === incoming.date && shift.label === incoming.label)
+      if (possibleDuplicate) {
+        plan.potentialDuplicates.push({ before: possibleDuplicate, after: incoming })
+        return
+      }
       plan.additions.push(incoming)
       return
     }
@@ -69,11 +79,24 @@ export function buildCalendarSyncPlan(
     plan.updates.push({ before: existing, after })
   })
 
+  const observed = new Set(plan.observedEventIds)
+  previousEventIds.forEach((eventId) => {
+    if (observed.has(eventId)) return
+    const existing = existingShifts.find((shift) => (
+      shift.calendarEventId === eventId
+      && shift.source === 'calendar'
+      && shift.status !== 'cancelled'
+      && shift.date >= assessmentStart
+      && shift.date <= assessmentEnd
+    ))
+    if (existing) plan.removals.push({ before: existing, after: { ...existing, status: 'cancelled' } })
+  })
+
   return plan
 }
 
 export function applyCalendarSyncPlan(shifts: Shift[], plan: CalendarSyncPlan) {
-  const updates = new Map([...plan.links, ...plan.updates].map((update) => [update.before.id, update.after]))
+  const updates = new Map([...plan.links, ...plan.updates, ...plan.removals].map((update) => [update.before.id, update.after]))
   return [
     ...shifts.map((shift) => updates.get(shift.id) ?? shift),
     ...plan.additions,

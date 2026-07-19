@@ -15,12 +15,16 @@ function previousWorkingDay(date: DateTime, rules: PayRules) {
   return candidate
 }
 
-export function forecastPayDate(shift: Shift, rules: PayRules) {
-  const shiftDate = DateTime.fromISO(shift.date, { zone: rules.zone }).startOf('day')
+export function forecastPayDateForWorkDate(date: string, rules: PayRules) {
+  const shiftDate = DateTime.fromISO(date, { zone: rules.zone }).startOf('day')
   const cutoff = lastSaturdayOfMonth(shiftDate)
   const monthsAhead = shiftDate <= cutoff ? 1 : 2
   const contractualPayDate = shiftDate.plus({ months: monthsAhead }).set({ day: 25 })
   return previousWorkingDay(contractualPayDate, rules).toISODate()!
+}
+
+export function forecastPayDate(shift: Shift, rules: PayRules) {
+  return forecastPayDateForWorkDate(shift.date, rules)
 }
 
 export function formatPayrollMonth(date: string) {
