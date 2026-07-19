@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { DateTime } from 'luxon'
 import { templates, type TemplateName } from '../data/defaults'
-import { statutoryBreakMinutes } from '../domain/breaks'
 import { calculateShift } from '../domain/calculateShift'
+import { formatPence } from '../domain/money'
 import { forecastPayDate, formatPayrollMonth } from '../domain/payroll'
 import { shiftChangeSummary } from '../domain/summaries'
 import type { PayRules, PlannerSettings, Shift } from '../domain/types'
@@ -15,8 +15,6 @@ interface Props {
   onSave: (shift: Shift) => void
   onCancel?: () => void
 }
-
-const money = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value)
 
 function initialDraft(existing?: Shift): Shift {
   return existing ?? {
@@ -33,20 +31,19 @@ function initialDraft(existing?: Shift): Shift {
 
 export function ShiftForm({ rules, allShifts, settings, existing, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => initialDraft(existing))
-  const rawResult = useMemo(() => calculateShift(draft, rules), [draft, rules])
-  const isTrainingOrStudy = /training|study/i.test(draft.label)
-  const assumedMinimumBreak = isTrainingOrStudy ? statutoryBreakMinutes(rawResult.elapsedHours) : 0
-  const effectiveBreak = Math.max(draft.breakMinutes, assumedMinimumBreak)
-  const result = useMemo(
-    () => calculateShift({ ...draft, breakMinutes: effectiveBreak }, rules),
-    [draft, effectiveBreak, rules],
-  )
-  const payrollDate = forecastPayDate(draft, rules)
-  const change = useMemo(
-    () => shiftChangeSummary(allShifts, { ...draft, breakMinutes: effectiveBreak }, rules, settings, existing?.id),
-    [allShifts, draft, effectiveBreak, existing?.id, rules, settings],
-  )
-  const projectedIsBuffer = change.projected.difference >= 0
+  const effectiveBreak = draft.breakMinutes
+  const preview = useMemo(() => {
+    try {
+      if (!draft.date || !draft.start || !draft.end) throw new Error('Enter a valid date, start time and finish time.')
+      return {
+        result: calculateShift({ ...draft, breakMinutes: effectiveBreak }, rules),
+        payrollDate: forecastPayDate(draft, rules),
+        change: shiftChangeSummary(allShifts, { ...draft, breakMinutes: effectiveBreak }, rules, settings, existing?.id),
+      }
+    } catch (caught) {
+      return { error: caught instanceof Error ? caught.message : 'VIP cannot calculate this shift.' }
+    }
+  }, [allShifts, draft, effectiveBreak, existing?.id, rules, settings])
 
   const applyTemplate = (name: TemplateName) => {
     const template = templates[name]
@@ -54,6 +51,7 @@ export function ShiftForm({ rules, allShifts, settings, existing, onSave, onCanc
   }
 
   const save = () => {
+    if (!preview.result) return
     onSave({
       ...draft,
       breakMinutes: effectiveBreak,
@@ -91,35 +89,38 @@ export function ShiftForm({ rules, allShifts, settings, existing, onSave, onCanc
           <option value="planned">Planned</option><option value="worked">Worked</option><option value="cancelled">Cancelled</option>
         </select></label>
       </div>
-      {assumedMinimumBreak > draft.breakMinutes && <p className="inline-warning">A 20-minute unpaid break will be assumed because this training/study entry is longer than six hours.</p>}
+      {preview.error && <p className="sync-error" role="alert">{preview.error}</p>}
+      {preview.result && preview.change && preview.payrollDate && <>
+        {/training|study/i.test(draft.label) && preview.result.elapsedHours > 6 && draft.breakMinutes === 0 && <p className="inline-warning">This entry is longer than six hours. Confirm whether any break is unpaid before relying on the estimate; VIP has not deducted one automatically.</p>}
 
-      <div className="impact-grid">
-        <div><span>Gross impact</span><strong>{money(result.gross)}</strong></div>
-        <div><span>Paid hours</span><strong>{result.paidHours.toFixed(2)}h</strong></div>
-        <div><span>Holiday earned</span><strong>{result.holidayHours.toFixed(2)}h</strong></div>
-        <div><span>Expected payroll</span><strong>{formatPayrollMonth(payrollDate)}</strong><small>Forecast pay date {DateTime.fromISO(payrollDate).toFormat('d LLL')}</small></div>
-      </div>
-
-      <div className={`projected-buffer ${projectedIsBuffer ? 'positive-panel' : 'negative-panel'}`}>
-        <span className="eyebrow">After saving</span>
-        <strong>{Math.abs(change.projected.bufferHours).toFixed(2)} base-rate hours {projectedIsBuffer ? 'buffer' : 'still needed'}</strong>
-        <p>{projectedIsBuffer ? money(change.projected.difference) + ' above' : money(Math.abs(change.projected.difference)) + ' below'} the planning target.</p>
-        {existing && <small>This edit {change.paidHoursChange < 0 ? 'removes' : 'adds'} {Math.abs(change.paidHoursChange).toFixed(2)} paid hours and {change.earningsChange < 0 ? 'uses' : 'adds'} {money(Math.abs(change.earningsChange))} of the earnings cushion.</small>}
-      </div>
-
-      <details>
-        <summary>View pay breakdown</summary>
-        <div className="breakdown">
-          {result.segments.filter((segment) => segment.paidHours > 0).map((segment) => (
-            <div className="breakdown-row" key={`${segment.startsAt}-${segment.endsAt}`}>
-              <div><strong>{segment.label}</strong><span>{DateTime.fromISO(segment.startsAt, { setZone: true }).toFormat('ccc HH:mm')}–{DateTime.fromISO(segment.endsAt, { setZone: true }).toFormat('ccc HH:mm')}</span></div>
-              <div><strong>{money(segment.gross)}</strong><span>{segment.paidHours.toFixed(2)}h at {segment.multiplier.toFixed(2)}×</span></div>
-            </div>
-          ))}
+        <div className="impact-grid">
+          <div><span>Gross impact</span><strong>{formatPence(preview.result.grossPence)}</strong></div>
+          <div><span>Paid hours</span><strong>{preview.result.paidHours.toFixed(2)}h</strong></div>
+          <div><span>Holiday earned</span><strong>{preview.result.holidayHours.toFixed(2)}h</strong></div>
+          <div><span>Expected payroll</span><strong>{formatPayrollMonth(preview.payrollDate)}</strong><small>Forecast pay date {DateTime.fromISO(preview.payrollDate).toFormat('d LLL')}</small></div>
         </div>
-      </details>
 
-      <button className="primary-button" type="button" onClick={save}>{existing ? 'Save changes' : 'Add this shift'}</button>
+        <div className={`projected-buffer ${preview.change.projected.differencePence >= 0 ? 'positive-panel' : 'negative-panel'}`}>
+          <span className="eyebrow">After saving</span>
+          <strong>{Math.abs(preview.change.projected.bufferHours).toFixed(2)} base-rate hours {preview.change.projected.differencePence >= 0 ? 'buffer' : 'still needed'}</strong>
+          <p>{preview.change.projected.differencePence >= 0 ? formatPence(preview.change.projected.differencePence) + ' above' : formatPence(Math.abs(preview.change.projected.differencePence)) + ' below'} the planning target.</p>
+          {existing && <small>This edit {preview.change.paidHoursChange < 0 ? 'removes' : 'adds'} {Math.abs(preview.change.paidHoursChange).toFixed(2)} paid hours and {preview.change.earningsChangePence < 0 ? 'uses' : 'adds'} {formatPence(Math.abs(preview.change.earningsChangePence))} of the earnings cushion.</small>}
+        </div>
+
+        <details>
+          <summary>View pay breakdown</summary>
+          <div className="breakdown">
+            {preview.result.segments.filter((segment) => segment.paidHours > 0).map((segment) => (
+              <div className="breakdown-row" key={`${segment.startsAt}-${segment.endsAt}`}>
+                <div><strong>{segment.label}</strong><span>{DateTime.fromISO(segment.startsAt, { setZone: true }).toFormat('ccc HH:mm')}–{DateTime.fromISO(segment.endsAt, { setZone: true }).toFormat('ccc HH:mm')}</span></div>
+                <div><strong>{formatPence(segment.grossPence)}</strong><span>{segment.paidHours.toFixed(2)}h at {segment.multiplier.toFixed(2)}×</span></div>
+              </div>
+            ))}
+          </div>
+        </details>
+      </>}
+
+      <button className="primary-button" type="button" disabled={!preview.result} onClick={save}>{existing ? 'Save changes' : 'Add this shift'}</button>
       <p className="safety-note">Gross planning estimate only. Net pay will be added after a recent payslip is available.</p>
     </section>
   )

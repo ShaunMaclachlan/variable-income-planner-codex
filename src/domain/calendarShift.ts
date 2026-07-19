@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon'
-import { statutoryBreakMinutes } from './breaks'
 import type { Shift, ShiftStatus } from './types'
 
 export interface CalendarShiftInput {
@@ -15,7 +14,12 @@ export interface CalendarShiftInput {
 export type CalendarWorkMode = 'generic'
 
 const ZONE = 'Europe/London'
-const earlyFinishes = new Set(['13:00', '14:00', '15:00'])
+const templateTimes: Record<string, { start: string; end: string; breakMinutes: number }> = {
+  Early: { start: '07:00', end: '15:00', breakMinutes: 60 },
+  Late: { start: '12:00', end: '20:00', breakMinutes: 60 },
+  'Long day': { start: '07:00', end: '20:00', breakMinutes: 60 },
+  Night: { start: '19:00', end: '07:30', breakMinutes: 60 },
+}
 
 function localDateTime(value: string) {
   const parsed = DateTime.fromISO(value, { setZone: true }).setZone(ZONE)
@@ -32,6 +36,7 @@ export function calendarEventToShift(event: CalendarShiftInput, workMode: Calend
 
   const calendarStart = localDateTime(event.start)
   const calendarEnd = localDateTime(event.end)
+  const recordedEnd = event.confirmedEnd ?? calendarEnd.toFormat('HH:mm')
   const common = {
     id: event.id,
     date: calendarStart.toISODate()!,
@@ -42,33 +47,37 @@ export function calendarEventToShift(event: CalendarShiftInput, workMode: Calend
   }
 
   if (normalisedTitle.includes('early')) {
-    const recordedFinish = event.confirmedEnd ?? calendarEnd.toFormat('HH:mm')
     return {
       ...common,
       label: 'Early',
-      start: '07:00',
-      end: earlyFinishes.has(recordedFinish) ? recordedFinish : '15:00',
+      start: calendarStart.toFormat('HH:mm'),
+      end: recordedEnd,
       breakMinutes: 60,
     }
   }
   if (normalisedTitle.includes('late')) {
-    return { ...common, label: 'Late', start: '12:00', end: '20:00', breakMinutes: 60 }
+    return { ...common, label: 'Late', start: calendarStart.toFormat('HH:mm'), end: recordedEnd, breakMinutes: 60 }
   }
   if (normalisedTitle.includes('long day')) {
-    return { ...common, label: 'Long day', start: '07:00', end: '20:00', breakMinutes: 60 }
+    return { ...common, label: 'Long day', start: calendarStart.toFormat('HH:mm'), end: recordedEnd, breakMinutes: 60 }
   }
   if (normalisedTitle.includes('night')) {
-    return { ...common, label: 'Night', start: '19:00', end: '07:30', breakMinutes: 60 }
+    return { ...common, label: 'Night', start: calendarStart.toFormat('HH:mm'), end: recordedEnd, breakMinutes: 60 }
   }
   if (normalisedTitle.includes('training')) {
-    const elapsedHours = calendarEnd.diff(calendarStart, 'hours').hours
     return {
       ...common,
       label: title,
       start: calendarStart.toFormat('HH:mm'),
-      end: calendarEnd.toFormat('HH:mm'),
-      breakMinutes: statutoryBreakMinutes(elapsedHours),
+      end: recordedEnd,
+      breakMinutes: 0,
     }
   }
   return null
+}
+
+export function calendarTemplateWarning(shift: Shift) {
+  const template = templateTimes[shift.label]
+  if (!template || (shift.start === template.start && shift.end === template.end)) return null
+  return `${shift.date} ${shift.label}: calendar time ${shift.start}–${shift.end} differs from the ${template.start}–${template.end} template. The calendar time has been preserved for review.`
 }

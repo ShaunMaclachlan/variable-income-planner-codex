@@ -13,15 +13,15 @@ function event(overrides: Partial<CalendarShiftInput> = {}): CalendarShiftInput 
 }
 
 describe('calendar shift wording policy', () => {
-  it('uses an early title instead of conflicting calendar hours', () => {
-    expect(calendarEventToShift(event())).toMatchObject({ label: 'Early', start: '07:00', end: '15:00' })
+  it('preserves conflicting calendar hours for review', () => {
+    expect(calendarEventToShift(event())).toMatchObject({ label: 'Early', start: '15:00', end: '22:00' })
   })
 
   it('keeps a recorded early finish when it is 1pm, 2pm or 3pm', () => {
     expect(calendarEventToShift(event({ end: '2026-08-01T14:00:00+01:00' }))).toMatchObject({ end: '14:00' })
   })
 
-  it('normalises a late title to the confirmed 12pm–8pm shift', () => {
+  it('uses a late title only as the label and preserves its recorded hours', () => {
     expect(calendarEventToShift(event({
       summary: 'Late shift - Example Employer',
       start: '2026-08-01T12:00:00+01:00',
@@ -41,12 +41,12 @@ describe('calendar shift wording policy', () => {
     expect(calendarEventToShift(event({ summary: 'Summer picnic' }))).toBeNull()
   })
 
-  it('applies the 20-minute minimum assumption to long work training', () => {
+  it('does not assume an unpaid break for long work training', () => {
     expect(calendarEventToShift(event({
       summary: 'Equipment training',
       start: '2026-08-01T09:00:00+01:00',
       end: '2026-08-01T16:00:00+01:00',
-    }))).toMatchObject({ breakMinutes: 20 })
+    }))).toMatchObject({ breakMinutes: 0 })
   })
 
   it('accepts recognised shift wording for a generic work-calendar profile', () => {

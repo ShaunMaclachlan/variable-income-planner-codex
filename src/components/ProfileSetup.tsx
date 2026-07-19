@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { DateTime } from 'luxon'
 import { newProfileState } from '../data/defaults'
+import { poundsToPence } from '../domain/money'
 import type { PlannerState } from '../domain/types'
 
 interface Props {
@@ -29,7 +30,7 @@ export function ProfileSetup({ profiles, onSelect, onCreate }: Props) {
     const id = profileId(firstName)
     onCreate(newProfileState(
       { id, firstName: firstName.trim(), employer: employer.trim() },
-      { assessmentStart, assessmentEnd, assessmentTarget, manualHolidayHours: 0 },
+      { assessmentStart, assessmentEnd, assessmentTargetPence: poundsToPence(assessmentTarget), manualHolidayHours: 0, manualHolidayDate: '' },
       baseRate,
     ))
   }

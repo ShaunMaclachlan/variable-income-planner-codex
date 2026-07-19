@@ -14,9 +14,14 @@ export interface Shift {
   calendarEventId?: string
 }
 
+export interface PayRatePeriod {
+  effectiveFrom: string
+  hourlyRatePence: number
+}
+
 export interface PayRules {
   zone: string
-  baseRate: number
+  ratePeriods: PayRatePeriod[]
   weekdayNightMultiplier: number
   saturdayMultiplier: number
   sundayMultiplier: number
@@ -33,14 +38,17 @@ export interface PaySegment {
   endsAt: string
   elapsedHours: number
   paidHours: number
+  paidMinutes: number
   multiplier: number
-  gross: number
+  hourlyRatePence: number
+  grossPence: number
 }
 
 export interface ShiftCalculation {
+  engineVersion: string
   elapsedHours: number
   paidHours: number
-  gross: number
+  grossPence: number
   holidayHours: number
   segments: PaySegment[]
 }
@@ -48,8 +56,9 @@ export interface ShiftCalculation {
 export interface PlannerSettings {
   assessmentStart: string
   assessmentEnd: string
-  assessmentTarget: number
+  assessmentTargetPence: number
   manualHolidayHours: number
+  manualHolidayDate: string
 }
 
 export interface PlannerProfile {
@@ -63,6 +72,7 @@ export interface CalendarConnection {
   name: string
   url: string
   lastSyncedAt?: string
+  importedEventIds?: string[]
 }
 
 export interface PlannerState {

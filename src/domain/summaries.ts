@@ -1,4 +1,5 @@
 import { calculateShift } from './calculateShift'
+import { hourlyRatePenceForDate } from './money'
 import type { PayRules, PlannerSettings, Shift } from './types'
 
 export function includedShifts(shifts: Shift[]) {
@@ -9,12 +10,12 @@ export function totalFor(shifts: Shift[], rules: PayRules) {
   return includedShifts(shifts).reduce(
     (summary, shift) => {
       const result = calculateShift(shift, rules)
-      summary.gross += result.gross
+      summary.grossPence += result.grossPence
       summary.hours += result.paidHours
       summary.holidayHours += result.holidayHours
       return summary
     },
-    { gross: 0, hours: 0, holidayHours: 0 },
+    { grossPence: 0, hours: 0, holidayHours: 0 },
   )
 }
 
@@ -22,19 +23,31 @@ export function assessmentSummary(shifts: Shift[], rules: PayRules, settings: Pl
   const inPeriod = shifts.filter(
     (shift) => shift.date >= settings.assessmentStart && shift.date <= settings.assessmentEnd,
   )
-  const shiftGross = totalFor(inPeriod, rules).gross
-  const manualHolidayGross = settings.manualHolidayHours * rules.baseRate
-  const gross = shiftGross + manualHolidayGross
-  const difference = gross - settings.assessmentTarget
-  const bufferHours = rules.baseRate > 0 ? difference / rules.baseRate : 0
+  const workedGrossPence = totalFor(inPeriod.filter((shift) => shift.status === 'worked'), rules).grossPence
+  const plannedGrossPence = totalFor(inPeriod.filter((shift) => shift.status === 'planned'), rules).grossPence
+  const shiftGrossPence = workedGrossPence + plannedGrossPence
+  const baseRatePence = hourlyRatePenceForDate(rules, settings.assessmentEnd)
+  const holidayIsDatedInPeriod = Boolean(
+    settings.manualHolidayDate
+    && settings.manualHolidayDate >= settings.assessmentStart
+    && settings.manualHolidayDate <= settings.assessmentEnd,
+  )
+  const manualHolidayGrossPence = holidayIsDatedInPeriod
+    ? Math.round(settings.manualHolidayHours * hourlyRatePenceForDate(rules, settings.manualHolidayDate))
+    : 0
+  const grossPence = shiftGrossPence + manualHolidayGrossPence
+  const differencePence = grossPence - settings.assessmentTargetPence
+  const bufferHours = baseRatePence > 0 ? differencePence / baseRatePence : 0
   return {
-    shiftGross,
-    manualHolidayGross,
-    gross,
-    target: settings.assessmentTarget,
-    difference,
+    workedGrossPence,
+    plannedGrossPence,
+    shiftGrossPence,
+    manualHolidayGrossPence,
+    grossPence,
+    targetPence: settings.assessmentTargetPence,
+    differencePence,
     bufferHours,
-    progress: settings.assessmentTarget > 0 ? Math.min(1, gross / settings.assessmentTarget) : 0,
+    progress: settings.assessmentTargetPence > 0 ? Math.min(1, grossPence / settings.assessmentTargetPence) : 0,
   }
 }
 
@@ -57,7 +70,7 @@ export function shiftChangeSummary(
   return {
     current,
     projected,
-    earningsChange: projected.gross - current.gross,
+    earningsChangePence: projected.grossPence - current.grossPence,
     paidHoursChange: projectedHours - currentHours,
   }
 }
