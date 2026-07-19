@@ -1,6 +1,8 @@
 # Variable Income Planner
 
-Phase 1 is a mobile web app, initially configured for Loren, answering one question: **“What happens financially if I work this shift?”**
+Phase 1 is a mobile web app answering one question: **“What happens financially if I work this shift?”**
+
+The repository contains anonymised demonstration state only. Real pilot profiles, rotas and calendar data must never be committed.
 
 This repository replaces the calculation assumptions embedded in the earlier visual prototypes with a documented, tested domain engine.
 
@@ -28,8 +30,8 @@ npm run check
 - payroll cutoff and previous-working-day payday forecasting
 - read-only Apple/iCloud/iRota `.ics` calendar checks with review-before-apply and file fallback
 - calendar normalisation where the shift title wins over conflicting event hours
-- local-first profiles with optional Supabase cloud backup protected by anonymous authentication and Row Level Security
+- local-first profiles; experimental cloud code is not enabled in the public build
 
 Read [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) before relying on forecasts. Product questions that remain after the first build are recorded in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
 
-Supabase activation and deployment steps are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
+Experimental Supabase setup notes are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md); cloud state is not approved for the pilot.

@@ -31,7 +31,7 @@ function normaliseStore(value: Partial<PlannerStore>): PlannerStore {
   const profiles = Array.isArray(value.profiles)
     ? value.profiles.map((profile) => normaliseState(
       profile,
-      profile.profile?.id === 'loren' ? defaultState : profile as PlannerState,
+      profile as PlannerState,
     ))
     : []
 
@@ -52,7 +52,7 @@ function loadStore(): PlannerStore {
     if (legacy) {
       const parsed = JSON.parse(legacy) as Partial<PlannerState>
       return {
-        activeProfileId: 'loren',
+        activeProfileId: parsed.profile?.id ?? defaultState.profile.id,
         profiles: [normaliseState(parsed, defaultState)],
       }
     }
@@ -169,9 +169,7 @@ export function usePersistedState() {
 
   const reset = useCallback(() => {
     if (!state) return
-    const value = state.profile.id === 'loren'
-      ? structuredClone(defaultState)
-      : { ...structuredClone(state), shifts: [] }
+    const value = { ...structuredClone(state), shifts: [] }
     setState(value)
   }, [setState, state])
 

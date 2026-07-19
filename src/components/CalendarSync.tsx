@@ -22,7 +22,7 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
   const handledRequest = useRef(0)
-  const workMode = /phyllis\s*tuckwell/i.test(state.profile.employer) ? 'loren' as const : 'generic' as const
+  const workMode = 'generic' as const
 
   const prepareReview = useCallback((text: string, connection?: CalendarConnection) => {
     const parsed = parseIcsCalendar(text)
@@ -130,7 +130,7 @@ export function CalendarSync({ state, setState, syncRequest }: Props) {
         <button className="primary-button" disabled={loading} onClick={() => void checkConnection(state.calendarConnection!)}>{loading ? 'Checking calendar…' : 'Sync calendar now'}</button>
         <button className="text-button disconnect-button" onClick={disconnect}>Disconnect calendar</button>
       </> : <>
-        <p className="calendar-intro">Paste the read-only subscription link for {state.profile.firstName}’s work rota. VIP will only consider {workMode === 'loren' ? 'recognised Phyllis Tuckwell work entries' : 'recognised Early, Late, Long day, Night or Training entries'} inside the assessment period.</p>
+        <p className="calendar-intro">Paste the read-only subscription link for {state.profile.firstName}’s work rota. VIP will only consider recognised Early, Late, Long day, Night or Training entries inside the assessment period.</p>
         <label className="calendar-url">Calendar subscription link<input type="url" value={url} placeholder="webcal://… or https://…/calendar.ics" onChange={(event) => setUrl(event.target.value)} /></label>
         <button className="primary-button" disabled={loading || !url.trim()} onClick={connect}>{loading ? 'Checking calendar…' : 'Connect and check calendar'}</button>
         <details className="calendar-help">

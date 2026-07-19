@@ -12,7 +12,7 @@ export interface CalendarShiftInput {
   calendarEventId?: string
 }
 
-export type CalendarWorkMode = 'loren' | 'generic'
+export type CalendarWorkMode = 'generic'
 
 const ZONE = 'Europe/London'
 const earlyFinishes = new Set(['13:00', '14:00', '15:00'])
@@ -23,12 +23,11 @@ function localDateTime(value: string) {
   return parsed
 }
 
-export function calendarEventToShift(event: CalendarShiftInput, workMode: CalendarWorkMode = 'loren'): Shift | null {
+export function calendarEventToShift(event: CalendarShiftInput, workMode: CalendarWorkMode = 'generic'): Shift | null {
   const title = event.summary.trim()
   const normalisedTitle = title.toLowerCase()
-  const isKnownLorenEvent = /phyllis\s*tuckwell/i.test(title) || /syringe\s*pump\s*training/i.test(title)
   const isGenericShiftEvent = /\b(early|late|long\s*day|night|training)\b/i.test(title)
-  const isWorkEvent = workMode === 'loren' ? isKnownLorenEvent : isGenericShiftEvent
+  const isWorkEvent = workMode === 'generic' && isGenericShiftEvent
   if (!isWorkEvent) return null
 
   const calendarStart = localDateTime(event.start)

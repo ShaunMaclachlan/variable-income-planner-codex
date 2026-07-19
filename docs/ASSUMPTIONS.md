@@ -1,6 +1,6 @@
 # Calculation decisions
 
-The domain engine is the source of truth. These decisions reflect the contract information, the user's confirmations and the bounded calendar review completed on 18 July 2026.
+The domain engine is the source of truth. These are demonstration rules and hypotheses until independently reconciled against a real contract and payslip. No real pilot rota is stored in this repository.
 
 ## Pay and holiday
 
@@ -16,9 +16,9 @@ The domain engine is the source of truth. These decisions reflect the contract i
 ## Shifts and breaks
 
 - Normal early, late, long-day and night templates use a **60-minute unpaid break**.
-- When a break crosses pay bands, it is deducted from the **highest-rate hours first**, as directly confirmed by the user.
+- When a break crosses pay bands, it is deducted from the **highest-rate hours first**. This remains an assumption pending payslip verification.
 - Early shifts start at 07:00 and can finish at **13:00, 14:00 or 15:00**.
-- Late shifts are **12:00–20:00**, as directly confirmed by the user.
+- The demonstration late template is **12:00–20:00**.
 - Long days are 07:00–20:00 and nights are 19:00–07:30.
 - For a training/study entry longer than six hours, the planner assumes a 20-minute unpaid break unless a different break is entered. GOV.UK says adult workers are usually entitled to a 20-minute break when working more than six hours, but whether it is paid depends on the contract and healthcare work can involve compensatory-rest rules: <https://www.gov.uk/rest-breaks-work>.
 
@@ -26,11 +26,11 @@ The domain engine is the source of truth. These decisions reflect the contract i
 
 - The event title determines the shift type; conflicting calendar clock times do not change that type.
 - An early event keeps its calendar finish only when that finish is 13:00, 14:00 or 15:00. Otherwise it defaults to 15:00.
-- A confirmed email change overrides the recorded calendar finish. The Monday 20 July early shift is therefore recorded as finishing at 13:00.
+- A confirmed email change overrides an older calendar finish after user review.
 - Late, long-day and night titles use the standard templates above.
 - Work training keeps its recorded start and finish and uses the length-based break rule.
 - Unrelated events such as sports training are excluded.
-- The seed is a snapshot, not live sync. It contains relevant work entries reviewed through 30 August 2026.
+- No real calendar snapshot or future rota is committed.
 - Until an email integration is designed, later changes are applied through Edit Shift and saved locally.
 - Calendar sync is user-triggered and read-only. VIP never writes to the source calendar.
 - A subscription-link sync reads timed `.ics` events, filters to the active assessment period and applies nothing until the user reviews the result.
@@ -42,12 +42,11 @@ The domain engine is the source of truth. These decisions reflect the contract i
 
 ## Childcare and payroll
 
-- The assessment period is **9 June–9 September 2026**, inclusive.
-- The planning target is **£2,643.68**.
+- Assessment-period dates and the planning target are entered per profile.
 - Childcare progress uses expected earnings for shifts whose start date falls inside the assessment period, not the later cash pay date.
 - The hours cushion is the monetary buffer divided by the profile's base hourly rate. It is labelled **base-rate hours** because enhanced Saturday, Sunday, night or public-holiday hours consume a different amount of monetary buffer.
 - Editing a shift uses the actual segmented pay calculation to show the exact resulting monetary and base-rate-hours position.
-- July includes **3.25 paid-holiday hours** at base rate.
+- Paid-holiday hours are entered manually until payroll evidence supports an automated rule.
 - Payroll cutoff is the last Saturday of the month, inclusive.
 - A shift crossing the cutoff is allocated using its start date.
 - Payday is the 25th, moved to the previous working day for a weekend or listed England and Wales public holiday.

@@ -32,7 +32,7 @@ export function buildCalendarSyncPlan(
   assessmentEnd: string,
   warnings: string[] = [],
   asOfDate: string = DateTime.now().setZone('Europe/London').toISODate()!,
-  workMode: CalendarWorkMode = 'loren',
+  workMode: CalendarWorkMode = 'generic',
 ): CalendarSyncPlan {
   const plan: CalendarSyncPlan = { additions: [], updates: [], links: [], protected: [], unchanged: 0, ignored: 0, warnings }
 

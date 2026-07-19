@@ -6,30 +6,29 @@ describe('VIP app', () => {
   beforeEach(() => localStorage.clear())
   afterEach(() => vi.restoreAllMocks())
 
-  const continueAsLoren = () => {
-    fireEvent.click(screen.getByRole('button', { name: /Loren/ }))
+  const continueAsDemo = () => {
+    fireEvent.click(screen.getByRole('button', { name: /Demo/ }))
   }
 
-  it('opens with a device-profile chooser rather than assuming every user is Loren', () => {
+  it('opens with an anonymised device-profile chooser', () => {
     render(<App />)
     expect(screen.getByRole('heading', { name: 'Who is planning?' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Loren/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Demo/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create another profile' })).toBeInTheDocument()
   })
 
   it('renders a transparent planning dashboard', () => {
     render(<App />)
-    continueAsLoren()
-    expect(screen.getByText(/Loren/)).toBeInTheDocument()
+    continueAsDemo()
+    expect(screen.getByText(/Demo/)).toBeInTheDocument()
     expect(screen.getByText('Assessment progress')).toBeInTheDocument()
-    expect(screen.getByText('7.46h')).toBeInTheDocument()
-    expect(screen.getByText('5.46 hours')).toBeInTheDocument()
+    expect(screen.getByText('No upcoming shifts recorded.')).toBeInTheDocument()
     expect(screen.getByText(/not an eligibility decision/i)).toBeInTheDocument()
   })
 
   it('opens the shift impact planner from the primary action', () => {
     render(<App />)
-    continueAsLoren()
+    continueAsDemo()
     fireEvent.click(screen.getByRole('button', { name: 'Plan a shift' }))
     expect(screen.getByRole('heading', { name: 'What if I work this shift?' })).toBeInTheDocument()
     expect(screen.getByText('Gross impact')).toBeInTheDocument()
@@ -38,7 +37,7 @@ describe('VIP app', () => {
 
   it('shows the confirmed contract rules in settings', () => {
     render(<App />)
-    continueAsLoren()
+    continueAsDemo()
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
     expect(screen.getByText('Current contract rules')).toBeInTheDocument()
     expect(screen.getByText('Public holiday worked')).toBeInTheDocument()
@@ -47,7 +46,7 @@ describe('VIP app', () => {
 
   it('offers all three confirmed early finish choices', () => {
     render(<App />)
-    continueAsLoren()
+    continueAsDemo()
     fireEvent.click(screen.getByRole('button', { name: 'Plan a shift' }))
     expect(screen.getByRole('option', { name: '1pm' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: '2pm' })).toBeInTheDocument()
@@ -56,7 +55,7 @@ describe('VIP app', () => {
 
   it('uses the confirmed 12pm–8pm late template', () => {
     render(<App />)
-    continueAsLoren()
+    continueAsDemo()
     fireEvent.click(screen.getByRole('button', { name: 'Plan a shift' }))
     fireEvent.click(screen.getByRole('button', { name: 'Late' }))
     expect(screen.getByLabelText('Starts')).toHaveValue('12:00')
@@ -65,7 +64,7 @@ describe('VIP app', () => {
 
   it('offers a provider-neutral Apple calendar connection and safe file fallback', () => {
     render(<App />)
-    continueAsLoren()
+    continueAsDemo()
     fireEvent.click(screen.getByRole('button', { name: 'Connect calendar' }))
 
     expect(screen.getByRole('heading', { name: 'Sync your shifts' })).toBeInTheDocument()
@@ -80,14 +79,14 @@ describe('VIP app', () => {
 VERSION:2.0\r
 BEGIN:VEVENT\r
 UID:new-night@example.com\r
-SUMMARY:Night shift Phyllis Tuckwell\r
+SUMMARY:Night shift Example Employer\r
 DTSTART;TZID=Europe/London:20260901T190000\r
 DTEND;TZID=Europe/London:20260902T073000\r
 END:VEVENT\r
 END:VCALENDAR`
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(calendar, { status: 200 }))
     render(<App />)
-    continueAsLoren()
+    continueAsDemo()
     fireEvent.click(screen.getByRole('button', { name: 'Connect calendar' }))
     fireEvent.change(screen.getByLabelText('Calendar subscription link'), { target: { value: 'webcal://example.com/rota.ics' } })
     fireEvent.click(screen.getByRole('button', { name: 'Connect and check calendar' }))
@@ -100,15 +99,12 @@ END:VCALENDAR`
     expect(screen.getByRole('button', { name: 'Edit Night on 1 September 2026' })).toBeInTheDocument()
   })
 
-  it('previews the hours cushion after changing a 3pm early finish to 1pm', () => {
+  it('previews a hand-entered weekday early shift', () => {
     render(<App />)
-    continueAsLoren()
-    fireEvent.click(screen.getByRole('button', { name: 'Shifts' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Edit Early on 15 June 2026' }))
-    fireEvent.change(screen.getByLabelText('Early finish'), { target: { value: '13:00' } })
-
-    expect(screen.getByText(/5.46 base-rate hours buffer/i)).toBeInTheDocument()
-    expect(screen.getByText(/removes 2.00 paid hours/i)).toBeInTheDocument()
+    continueAsDemo()
+    fireEvent.click(screen.getByRole('button', { name: 'Plan a shift' }))
+    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-07-07' } })
+    expect(screen.getAllByText('£125.30')).not.toHaveLength(0)
   })
 
   it('creates a personalised blank plan for another user', () => {
@@ -139,6 +135,6 @@ END:VCALENDAR`
     fireEvent.click(screen.getByRole('button', { name: 'Connect calendar' }))
 
     expect(screen.getByText(/Alex’s work rota/)).toBeInTheDocument()
-    expect(screen.queryByText(/Loren’s work rota/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Demo’s work rota/)).not.toBeInTheDocument()
   })
 })

@@ -4,7 +4,6 @@ import { Dashboard } from './components/Dashboard'
 import { CalendarSync } from './components/CalendarSync'
 import { ProfileSetup } from './components/ProfileSetup'
 import { ShiftForm } from './components/ShiftForm'
-import { calendarSnapshotCheckedAt, calendarSnapshotThrough } from './data/calendarSnapshot'
 import { calculateShift } from './domain/calculateShift'
 import { forecastPayDate, formatPayrollMonth } from './domain/payroll'
 import { assessmentSummary } from './domain/summaries'
@@ -116,11 +115,6 @@ export default function App() {
             <h1>Your shifts</h1>
             <p>Worked and proposed shifts saved on this device.</p>
           </div>
-          {state.profile.id === 'loren' && <p className="snapshot-note">
-            Calendar checked {DateTime.fromISO(calendarSnapshotCheckedAt).toFormat('d LLL yyyy')};
-            work entries copied through {DateTime.fromISO(calendarSnapshotThrough).toFormat('d LLL yyyy')}.
-            This is a snapshot, not live sync.
-          </p>}
           <button className="primary-button standalone" onClick={() => { setEditing(undefined); setView('planner') }}>Add a shift</button>
           <section className="card shift-list">
             {sortedShifts.length === 0
@@ -218,7 +212,7 @@ export default function App() {
             </div>
             <p className="safety-note">The highest applicable enhancement wins. No overtime premium is assumed because the contract does not define one.</p>
           </section>
-          <button className="secondary-button standalone" onClick={() => { if (window.confirm(state.profile.id === 'loren' ? 'Reset Loren’s locally saved changes to the confirmed seed and calendar snapshot?' : 'Remove all shifts from this profile?')) reset() }}>Reset this profile</button>
+          <button className="secondary-button standalone" onClick={() => { if (window.confirm('Remove all shifts from this profile?')) reset() }}>Reset this profile</button>
         </>}
       </main>
 
