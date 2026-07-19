@@ -4,9 +4,7 @@ VIP remains local-first: it opens and works without Supabase. When Supabase is c
 
 ## 1. Restore the project
 
-Open the Supabase project dashboard:
-
-https://supabase.com/dashboard/project/ioyfkgzdfymfkjhhggqs
+Open the intended private Supabase project dashboard. Do not commit a real project URL.
 
 Choose **Restore project** or **Unpause project** and wait until the project is running.
 
@@ -24,7 +22,7 @@ The migration creates one JSON backup row per authenticated user and enables Row
 
 In Supabase, open **Authentication → Providers → Anonymous Sign-Ins** and enable anonymous sign-ins.
 
-This lets VIP create a secure user session without asking Loren for an email address or password. The session remains on that browser/device. A later phase can link it to email sign-in for reliable multi-device access.
+This lets VIP create a user session without asking for an email address or password. The session remains on that browser/device. This is not an approved recovery mechanism for the pilot.
 
 ## 4. Copy the browser-safe project values
 
@@ -43,7 +41,7 @@ In the `ShaunMaclachlan/variable-income-planner-codex` repository, open:
 
 Create these repository variables:
 
-- `VITE_SUPABASE_URL` = `https://ioyfkgzdfymfkjhhggqs.supabase.co`
+- `VITE_SUPABASE_URL` = the private project URL
 - `VITE_SUPABASE_PUBLISHABLE_KEY` = the publishable key copied from Supabase
 
 The publishable key is designed to be included in browser applications. The database remains protected by the migration's Row Level Security policies.
@@ -55,7 +53,7 @@ Merge the Supabase pull request into `main`. GitHub Pages will rebuild the app w
 Then:
 
 1. Open VIP in the usual browser.
-2. Select Loren's profile.
+2. Select an anonymised test profile.
 3. Add or edit a harmless test shift.
 4. In Supabase, open **Table Editor → planner_states** and confirm one row appears and its `updated_at` time changes.
 5. Remove the test shift if it was not real.
