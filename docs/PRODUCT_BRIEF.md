@@ -2,11 +2,11 @@
 
 ## User and job
 
-The first configured user is Loren, a Phyllis Tuckwell bank worker. The MVP helps a variable-income worker understand the gross financial effect and payroll timing of a proposed shift before accepting it.
+The MVP helps a variable-income worker understand the gross financial effect and payroll timing of a proposed shift before accepting it. Repository fixtures and default profiles are fictional; real pilot data stays outside source control.
 
 Within five seconds the home screen should show:
 
-1. Where she stands in the current childcare assessment period.
+1. Where the user stands in the current childcare assessment period.
 2. What needs attention.
 3. What changes if she adds another shift.
 
@@ -24,7 +24,7 @@ Within five seconds the home screen should show:
 - exact post-change buffer when adding or editing a shift
 - on-device profile chooser and personalised home screen
 - neutral pay-rule defaults for new profiles, with contract rates entered in Settings
-- local persistence and reset to confirmed seed plus calendar snapshot
+- local persistence and reset without committed personal seed data
 - calculation breakdowns and explicit decisions
 
 ## Excluded from this vertical slice
