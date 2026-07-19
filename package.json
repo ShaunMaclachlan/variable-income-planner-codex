@@ -17,7 +17,7 @@
     "luxon": "^3.7.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "vite": "^7.1.7"
+    "vite": "^8.1.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
